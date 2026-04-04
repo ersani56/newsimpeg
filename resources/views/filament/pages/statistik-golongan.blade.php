@@ -4,13 +4,12 @@
         .custom-statistik-table {
             border-collapse: collapse;
             width: 100%;
+            border: 2px solid #000;
         }
 
         .custom-statistik-table th,
         .custom-statistik-table td {
-            border: 2px solid #000;
-            padding: 0.75rem 1rem;
-            vertical-align: middle;
+            border: 2px solid #000 !important;
         }
 
         .custom-statistik-table th {
@@ -94,128 +93,178 @@
         .statistik-body {
             padding: 1rem;
         }
+        .mobile-view {
+            display: none;
+        }
+
+        .desktop-view {
+            display: block;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .mobile-view {
+                display: block;
+            }
+
+            .desktop-view {
+                display: none;
+            }
+        }
     </style>
     @endpush
 
-    <div>
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
-                Statistik Pegawai per Golongan
-            </h2>
+<div class="statistik-body">
 
-            <button
-                wire:click="exportPdf"
-                class="btn-export"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Export PDF
-            </button>
-        </div>
+    <!-- ================== MOBILE (CARD) ================== -->
+    <div class="mobile-view">
+        @foreach ($this->data as $row)
+            @php
+                $totalRow = $row->pns_l + $row->pns_p + $row->pppk_l + $row->pppk_p + $row->pppk_pw_l + $row->pppk_pw_p;
+            @endphp
 
-        <!-- Total Info Cards -->
-        <div class="total-info">
-            <div class="total-info-item">
-                <div class="total-info-label">Total Seluruh Pegawai</div>
-                <div class="total-info-value">{{ number_format($this->totalPegawai) }}</div>
+            <div class="bg-white rounded-xl shadow p-4 border">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-3">
+                    <div class="font-bold text-lg">
+                        {{ $row->golongan ?? '-' }}
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        Total: <span class="font-bold">{{ number_format($totalRow) }}</span>
+                    </div>
+                </div>
+
+                <!-- PNS -->
+                <div class="mb-2">
+                    <div class="font-semibold text-blue-600">PNS</div>
+                    <div class="flex justify-between text-sm">
+                        <span>L: {{ number_format($row->pns_l) }}</span>
+                        <span>P: {{ number_format($row->pns_p) }}</span>
+                        <span class="font-bold">Total: {{ number_format($row->pns_l + $row->pns_p) }}</span>
+                    </div>
+                </div>
+
+                <!-- PPPK -->
+                <div class="mb-2">
+                    <div class="font-semibold text-green-600">PPPK</div>
+                    <div class="flex justify-between text-sm">
+                        <span>L: {{ number_format($row->pppk_l) }}</span>
+                        <span>P: {{ number_format($row->pppk_p) }}</span>
+                        <span class="font-bold">Total: {{ number_format($row->pppk_l + $row->pppk_p) }}</span>
+                    </div>
+                </div>
+
+                <!-- PPPK Paruh Waktu -->
+                <div>
+                    <div class="font-semibold text-purple-600">PPPK Paruh Waktu</div>
+                    <div class="flex justify-between text-sm">
+                        <span>L: {{ number_format($row->pppk_pw_l) }}</span>
+                        <span>P: {{ number_format($row->pppk_pw_p) }}</span>
+                        <span class="font-bold">Total: {{ number_format($row->pppk_pw_l + $row->pppk_pw_p) }}</span>
+                    </div>
+                </div>
             </div>
-            <div class="total-info-item">
-                <div class="total-info-label">PNS</div>
-                <div class="total-info-value">{{ number_format($this->totalPns) }}</div>
-            </div>
-            <div class="total-info-item">
-                <div class="total-info-label">PPPK</div>
-                <div class="total-info-value">{{ number_format($this->totalPppk) }}</div>
-            </div>
-            <div class="total-info-item">
-                <div class="total-info-label">PPPK Paruh Waktu</div>
-                <div class="total-info-value">{{ number_format($this->totalPppkPw) }}</div>
-            </div>
-        </div>
+        @endforeach
 
-        <!-- Tabel Statistik -->
-        <div class="statistik-card">
-            <div class="statistik-header">
-                📊 Distribusi Pegawai Berdasarkan Golongan
-            </div>
-            <div class="statistik-body">
-                <div class="overflow-x-auto">
-                    <table class="custom-statistik-table">
-                        <thead>
-                            <tr>
-                                <th rowspan="2" class="text-left">Golongan</th>
-                                <th colspan="3">PNS</th>
-                                <th colspan="3">PPPK</th>
-                                <th colspan="3">PPPK Paruh Waktu</th>
-                                <th rowspan="2">Total</th>
-                            </tr>
-                            <tr>
-                                <th>L</th>
-                                <th>P</th>
-                                <th>Total</th>
-                                <th>L</th>
-                                <th>P</th>
-                                <th>Total</th>
-                                <th>L</th>
-                                <th>P</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($this->data as $row)
-                                @php
-                                    $totalRow = $row->pns_l + $row->pns_p + $row->pppk_l + $row->pppk_p + $row->pppk_pw_l + $row->pppk_pw_p;
-                                @endphp
-                                <tr>
-                                    <td class="text-left font-bold">{{ $row->golongan ?? '-' }}</td>
+        <!-- TOTAL CARD -->
+        <div class="bg-gray-100 rounded-xl p-4 border">
+            <div class="font-bold text-center mb-2">TOTAL KESELURUHAN</div>
 
-                                    <!-- PNS -->
-                                    <td>{{ number_format($row->pns_l) }}</td>
-                                    <td>{{ number_format($row->pns_p) }}</td>
-                                    <td class="font-bold">{{ number_format($row->pns_l + $row->pns_p) }}</td>
+            <div class="text-sm space-y-1">
+                <div class="flex justify-between">
+                    <span>PNS</span>
+                    <span class="font-bold">
+                        {{ number_format(collect($this->data)->sum('pns_l') + collect($this->data)->sum('pns_p')) }}
+                    </span>
+                </div>
 
-                                    <!-- PPPK -->
-                                    <td>{{ number_format($row->pppk_l) }}</td>
-                                    <td>{{ number_format($row->pppk_p) }}</td>
-                                    <td class="font-bold">{{ number_format($row->pppk_l + $row->pppk_p) }}</td>
+                <div class="flex justify-between">
+                    <span>PPPK</span>
+                    <span class="font-bold">
+                        {{ number_format(collect($this->data)->sum('pppk_l') + collect($this->data)->sum('pppk_p')) }}
+                    </span>
+                </div>
 
-                                    <!-- PPPK Paruh Waktu -->
-                                    <td>{{ number_format($row->pppk_pw_l) }}</td>
-                                    <td>{{ number_format($row->pppk_pw_p) }}</td>
-                                    <td class="font-bold">{{ number_format($row->pppk_pw_l + $row->pppk_pw_p) }}</td>
+                <div class="flex justify-between">
+                    <span>PPPK Paruh Waktu</span>
+                    <span class="font-bold">
+                        {{ number_format(collect($this->data)->sum('pppk_pw_l') + collect($this->data)->sum('pppk_pw_p')) }}
+                    </span>
+                </div>
 
-                                    <!-- Total per Golongan -->
-                                    <td class="font-bold">{{ number_format($totalRow) }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot class="bg-gray-100">
-                            <tr>
-                                <td class="text-left font-bold">TOTAL</td>
-
-                                <!-- Total PNS -->
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pns_l')) }}</td>
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pns_p')) }}</td>
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pns_l') + collect($this->data)->sum('pns_p')) }}</td>
-
-                                <!-- Total PPPK -->
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_l')) }}</td>
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_p')) }}</td>
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_l') + collect($this->data)->sum('pppk_p')) }}</td>
-
-                                <!-- Total PPPK Paruh Waktu -->
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_pw_l')) }}</td>
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_pw_p')) }}</td>
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_pw_l') + collect($this->data)->sum('pppk_pw_p')) }}</td>
-
-                                <!-- Grand Total -->
-                                <td class="font-bold">{{ number_format($this->totalPegawai) }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                <div class="flex justify-between border-t pt-2 mt-2">
+                    <span class="font-bold">Grand Total</span>
+                    <span class="font-bold">{{ number_format($this->totalPegawai) }}</span>
                 </div>
             </div>
         </div>
     </div>
+
+
+    <!-- ================== DESKTOP (TABEL) ================== -->
+    <div class="desktop-view overflow-x-auto">
+        <table class="custom-statistik-table min-w-[900px]">
+            <thead>
+                <tr>
+                    <th rowspan="2" class="text-left">Golongan</th>
+                    <th colspan="3">PNS</th>
+                    <th colspan="3">PPPK</th>
+                    <th colspan="3">PPPK Paruh Waktu</th>
+                    <th rowspan="2">Total</th>
+                </tr>
+                <tr>
+                    <th>L</th><th>P</th><th>Total</th>
+                    <th>L</th><th>P</th><th>Total</th>
+                    <th>L</th><th>P</th><th>Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach ($this->data as $row)
+                    @php
+                        $totalRow = $row->pns_l + $row->pns_p + $row->pppk_l + $row->pppk_p + $row->pppk_pw_l + $row->pppk_pw_p;
+                    @endphp
+                    <tr>
+                        <td class="text-left font-bold">{{ $row->golongan ?? '-' }}</td>
+
+                        <td>{{ number_format($row->pns_l) }}</td>
+                        <td>{{ number_format($row->pns_p) }}</td>
+                        <td class="font-bold">{{ number_format($row->pns_l + $row->pns_p) }}</td>
+
+                        <td>{{ number_format($row->pppk_l) }}</td>
+                        <td>{{ number_format($row->pppk_p) }}</td>
+                        <td class="font-bold">{{ number_format($row->pppk_l + $row->pppk_p) }}</td>
+
+                        <td>{{ number_format($row->pppk_pw_l) }}</td>
+                        <td>{{ number_format($row->pppk_pw_p) }}</td>
+                        <td class="font-bold">{{ number_format($row->pppk_pw_l + $row->pppk_pw_p) }}</td>
+
+                        <td class="font-bold">{{ number_format($totalRow) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+
+            <tfoot class="bg-gray-100">
+                <tr>
+                    <td class="text-left font-bold">TOTAL</td>
+
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pns_l')) }}</td>
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pns_p')) }}</td>
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pns_l') + collect($this->data)->sum('pns_p')) }}</td>
+
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_l')) }}</td>
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_p')) }}</td>
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_l') + collect($this->data)->sum('pppk_p')) }}</td>
+
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_pw_l')) }}</td>
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_pw_p')) }}</td>
+                    <td class="font-bold">{{ number_format(collect($this->data)->sum('pppk_pw_l') + collect($this->data)->sum('pppk_pw_p')) }}</td>
+
+                    <td class="font-bold">{{ number_format($this->totalPegawai) }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+</div>
 </x-filament::page>
