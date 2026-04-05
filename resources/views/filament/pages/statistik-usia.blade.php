@@ -289,23 +289,29 @@
                             <tr class="border-t-2 border-black">
                                 <td class="text-left">TOTAL</td>
 
-                                <!-- PNS Total -->
+                                @php
+                                    // Hitung total masing-masing kategori terlebih dahulu
+                                    $grandTotalPns = collect($this->data)->sum('pns_total');
+                                    $grandTotalPppk = collect($this->data)->sum('pppk_total');
+                                    $grandTotalPppkPw = collect($this->data)->sum('pppk_pw_total');
+
+                                    // Grand total adalah penjumlahan dari total per kategori yang tampil
+                                    $totalAkhirKonsisten = $grandTotalPns + $grandTotalPppk + $grandTotalPppkPw;
+                                @endphp
+
                                 <td>{{ number_format(collect($this->data)->sum('pns_l')) }}</td>
                                 <td>{{ number_format(collect($this->data)->sum('pns_p')) }}</td>
-                                <td class="bg-blue-100">{{ number_format(collect($this->data)->sum('pns_total')) }}</td>
+                                <td class="bg-blue-100">{{ number_format($grandTotalPns) }}</td>
 
-                                <!-- PPPK Total -->
                                 <td>{{ number_format(collect($this->data)->sum('pppk_l')) }}</td>
                                 <td>{{ number_format(collect($this->data)->sum('pppk_p')) }}</td>
-                                <td class="bg-green-100">{{ number_format(collect($this->data)->sum('pppk_total')) }}</td>
+                                <td class="bg-green-100">{{ number_format($grandTotalPppk) }}</td>
 
-                                <!-- PPPK Paruh Waktu Total -->
                                 <td>{{ number_format(collect($this->data)->sum('pppk_pw_l')) }}</td>
                                 <td>{{ number_format(collect($this->data)->sum('pppk_pw_p')) }}</td>
-                                <td class="bg-purple-100">{{ number_format(collect($this->data)->sum('pppk_pw_total')) }}</td>
+                                <td class="bg-purple-100">{{ number_format($grandTotalPppkPw) }}</td>
 
-                                <!-- Grand Total -->
-                                <td class="bg-gray-200">{{ number_format(collect($this->data)->sum('total')) }}</td>
+                                <td class="bg-gray-200">{{ number_format($totalAkhirKonsisten) }}</td>
                             </tr>
                         </tfoot>
                     </table>

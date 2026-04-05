@@ -191,35 +191,35 @@ class StatistikUsia extends Page
                 return $item->usia >= $range['min'] && $item->usia <= $range['max'];
             });
 
-            $pns_l = $filtered->where('kedudukan_hukum_id', '01')
-                              ->filter(function($item) {
-                                  return preg_match('/[mMlL]/', $item->jenis_kelamin);
-                              })->count();
+            $pns_l = $filtered->filter(function($item) {
+                return in_array($item->kedudukan_hukum_id, ['01', '02', '03', '13', '15', '04'])
+                    && preg_match('/[mMlL]/', $item->jenis_kelamin);
+            })->count();
 
-            $pns_p = $filtered->where('kedudukan_hukum_id', '01')
-                              ->filter(function($item) {
-                                  return preg_match('/[fFpP]/', $item->jenis_kelamin);
-                              })->count();
+            $pns_p = $filtered->filter(function($item) {
+                                return in_array($item->kedudukan_hukum_id, ['01', '02', '03', '13', '15', '04'])
+                                    && preg_match('/[fFpP]/', $item->jenis_kelamin);
+                            })->count();
 
             $pppk_l = $filtered->where('kedudukan_hukum_id', '71')
-                               ->filter(function($item) {
-                                   return preg_match('/[mMlL]/', $item->jenis_kelamin);
-                               })->count();
+                            ->filter(function($item) {
+                                return preg_match('/[mMlL]/', $item->jenis_kelamin);
+                            })->count();
 
             $pppk_p = $filtered->where('kedudukan_hukum_id', '71')
-                               ->filter(function($item) {
-                                   return preg_match('/[fFpP]/', $item->jenis_kelamin);
-                               })->count();
+                            ->filter(function($item) {
+                                return preg_match('/[fFpP]/', $item->jenis_kelamin);
+                            })->count();
 
             $pppk_pw_l = $filtered->where('kedudukan_hukum_id', '101')
-                                  ->filter(function($item) {
-                                      return preg_match('/[mMlL]/', $item->jenis_kelamin);
-                                  })->count();
+                                ->filter(function($item) {
+                                    return preg_match('/[mMlL]/', $item->jenis_kelamin);
+                                })->count();
 
             $pppk_pw_p = $filtered->where('kedudukan_hukum_id', '101')
-                                  ->filter(function($item) {
-                                      return preg_match('/[fFpP]/', $item->jenis_kelamin);
-                                  })->count();
+                                ->filter(function($item) {
+                                    return preg_match('/[fFpP]/', $item->jenis_kelamin);
+                                })->count();
 
             $result[] = (object)[
                 'range' => $range['label'],

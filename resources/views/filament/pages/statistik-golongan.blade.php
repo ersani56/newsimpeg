@@ -300,7 +300,7 @@
     $totalPns = $totalPnsL + $totalPnsP;
     $totalPppk = $totalPppkL + $totalPppkP;
     $totalPppkPw = $totalPppkPwL + $totalPppkPwP;
-    $grandTotal = $this->totalPegawai;
+    $grandTotal = $totalPns+$totalPppk+$totalPppkPw;
 
     // Hitung jumlah baris per grup untuk separator
     $pnsCount = 0;
