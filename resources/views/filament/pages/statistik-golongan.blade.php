@@ -5,11 +5,13 @@
             border-collapse: collapse;
             width: 100%;
             border: 2px solid #000;
+            min-width: 800px;
         }
 
         .custom-statistik-table th,
         .custom-statistik-table td {
             border: 2px solid #000 !important;
+            padding: 8px 12px;
         }
 
         .custom-statistik-table th {
@@ -48,12 +50,13 @@
             transform: translateY(-1px);
         }
 
-        .total-info {
+        .statistik-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            font-weight: bold;
+            font-size: 1.1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -61,424 +64,161 @@
             gap: 1rem;
         }
 
-        .total-info-item {
-            text-align: center;
-        }
-
-        .total-info-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
-        .total-info-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .statistik-card {
+        .statistik-body {
             background: white;
             border-radius: 0.5rem;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
-        .statistik-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem 1.5rem;
-            font-weight: bold;
-            font-size: 1.1rem;
+        /* Mobile Styles - Table with Horizontal Scroll */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .statistik-body {
-            padding: 1rem;
+        /* Custom scrollbar for better UX */
+        .table-wrapper::-webkit-scrollbar {
+            height: 8px;
         }
 
-        .mobile-view {
-            display: none;
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
         }
 
-        .desktop-view {
-            display: block;
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
         }
 
-        /* Enhanced Mobile Styles */
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Mobile specific table styling */
         @media (max-width: 768px) {
-            .mobile-view {
-                display: block;
+            .custom-statistik-table {
+                font-size: 12px;
+                min-width: 700px;
             }
 
-            .desktop-view {
-                display: none;
+            .custom-statistik-table th,
+            .custom-statistik-table td {
+                padding: 6px 8px;
             }
 
-            .mobile-stat-card {
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-                margin-bottom: 16px;
-                overflow: hidden;
-                transition: all 0.3s ease;
+            .statistik-header {
+                flex-direction: column;
+                text-align: center;
             }
 
-            .mobile-stat-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            /* Sticky first column for better readability */
+            .custom-statistik-table th:first-child,
+            .custom-statistik-table td:first-child {
+                position: sticky;
+                left: 0;
+                background-color: white;
+                z-index: 1;
             }
 
-            .mobile-card-header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 12px 16px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+            .custom-statistik-table th:first-child {
+                background-color: #e5e7eb;
+                z-index: 2;
             }
 
-            .mobile-golongan {
-                font-size: 16px;
-                font-weight: bold;
+            .custom-statistik-table tfoot td:first-child {
+                background-color: #f3f4f6;
             }
+        }
 
-            .mobile-total-badge {
-                background: rgba(255,255,255,0.2);
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 14px;
-                font-weight: bold;
-            }
+        /* Info cards for mobile summary */
+        .mobile-info-cards {
+            display: none;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
 
-            .mobile-stats-grid {
+        @media (max-width: 768px) {
+            .mobile-info-cards {
                 display: grid;
                 grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
-                padding: 16px;
+                margin-bottom: 16px;
             }
 
-            .mobile-stat-item {
-                background: #f8fafc;
-                border-radius: 10px;
-                padding: 12px;
-                text-align: center;
-                border-left: 3px solid;
-                transition: all 0.2s ease;
-            }
-
-            .mobile-stat-item.pns {
-                border-left-color: #3b82f6;
-            }
-
-            .mobile-stat-item.pppk {
-                border-left-color: #10b981;
-            }
-
-            .mobile-stat-item.pppk-pw {
-                border-left-color: #8b5cf6;
-            }
-
-            .mobile-stat-label {
-                font-size: 12px;
-                font-weight: 600;
-                margin-bottom: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-            }
-
-            .mobile-stat-label i {
-                font-size: 14px;
-            }
-
-            .mobile-gender-stats {
-                display: flex;
-                justify-content: space-between;
-                gap: 8px;
-                margin-top: 8px;
-                padding-top: 8px;
-                border-top: 1px solid #e2e8f0;
-            }
-
-            .mobile-gender-item {
-                flex: 1;
-                font-size: 11px;
-            }
-
-            .mobile-gender-value {
-                font-weight: bold;
-                font-size: 14px;
-                margin-top: 2px;
-            }
-
-            .mobile-total-section {
-                margin-top: 8px;
-                padding-top: 8px;
-                text-align: center;
-                font-weight: bold;
-                font-size: 14px;
-                color: #1e293b;
-            }
-
-            .mobile-overall-stats {
-                background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            .info-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
-                padding: 16px;
-                border-radius: 12px;
-                margin-top: 16px;
-            }
-
-            .mobile-overall-title {
-                font-size: 14px;
-                font-weight: bold;
-                text-align: center;
-                margin-bottom: 12px;
-                opacity: 0.9;
-            }
-
-            .mobile-overall-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-
-            .mobile-overall-item {
-                background: rgba(255,255,255,0.15);
-                padding: 10px;
-                border-radius: 8px;
-                text-align: center;
-            }
-
-            .mobile-overall-label {
-                font-size: 11px;
-                margin-bottom: 4px;
-            }
-
-            .mobile-overall-value {
-                font-size: 18px;
-                font-weight: bold;
-            }
-
-            .mobile-grand-total {
-                grid-column: span 2;
-                background: rgba(255,255,255,0.25);
-                margin-top: 4px;
-            }
-
-            .mobile-grand-total .mobile-overall-value {
-                font-size: 22px;
-            }
-
-            /* Progress bar for mobile */
-            .mobile-progress {
-                margin-top: 12px;
                 padding: 12px;
-                background: #f1f5f9;
                 border-radius: 8px;
+                text-align: center;
             }
 
-            .mobile-progress-item {
-                margin-bottom: 8px;
-            }
-
-            .mobile-progress-label {
+            .info-card-label {
                 font-size: 11px;
-                font-weight: 600;
+                opacity: 0.9;
                 margin-bottom: 4px;
-                display: flex;
-                justify-content: space-between;
             }
 
-            .mobile-progress-bar {
-                height: 6px;
-                background: #e2e8f0;
-                border-radius: 3px;
-                overflow: hidden;
-            }
-
-            .mobile-progress-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #667eea, #764ba2);
-                border-radius: 3px;
-                transition: width 0.3s ease;
+            .info-card-value {
+                font-size: 20px;
+                font-weight: bold;
             }
         }
     </style>
     @endpush
 
 <div class="statistik-body">
+    <!-- Header with Export Button (if needed) -->
+    <div class="statistik-header">
+        <div>📊 STATISTIK PEGAWAI PER GOLONGAN</div>
+        @if(isset($this->exportButton))
+            <button class="btn-export" onclick="window.livewire.emit('exportStatistik')">
+                📥 Export ke Excel
+            </button>
+        @endif
+    </div>
 
-    <!-- ================== MOBILE (ENHANCED CARDS) ================== -->
-    <div class="mobile-view">
-        @foreach ($this->data as $row)
-            @php
-                $totalRow = $row->pns_l + $row->pns_p + $row->pppk_l + $row->pppk_p + $row->pppk_pw_l + $row->pppk_pw_p;
-                $pnsTotal = $row->pns_l + $row->pns_p;
-                $pppkTotal = $row->pppk_l + $row->pppk_p;
-                $pppkPwTotal = $row->pppk_pw_l + $row->pppk_pw_p;
-            @endphp
+    <!-- Mobile Summary Cards (Ringkasan cepat di mobile) -->
+    @php
+        $totalPnsL = array_sum(array_column($this->data, 'pns_l'));
+        $totalPnsP = array_sum(array_column($this->data, 'pns_p'));
+        $totalPns = $totalPnsL + $totalPnsP;
 
-            <div class="mobile-stat-card">
-                <div class="mobile-card-header">
-                    <span class="mobile-golongan">{{ $row->golongan ?? '-' }}</span>
-                    <span class="mobile-total-badge">
-                        Total: {{ number_format($totalRow) }}
-                    </span>
-                </div>
+        $totalPppkL = array_sum(array_column($this->data, 'pppk_l'));
+        $totalPppkP = array_sum(array_column($this->data, 'pppk_p'));
+        $totalPppk = $totalPppkL + $totalPppkP;
 
-                <div class="mobile-stats-grid">
-                    <!-- PNS Card -->
-                    <div class="mobile-stat-item pns">
-                        <div class="mobile-stat-label">
-                            <span>👔</span> PNS
-                        </div>
-                        <div class="mobile-gender-stats">
-                            <div class="mobile-gender-item">
-                                <div>👨 Laki</div>
-                                <div class="mobile-gender-value">{{ number_format($row->pns_l) }}</div>
-                            </div>
-                            <div class="mobile-gender-item">
-                                <div>👩 Perempuan</div>
-                                <div class="mobile-gender-value">{{ number_format($row->pns_p) }}</div>
-                            </div>
-                        </div>
-                        <div class="mobile-total-section">
-                            Total: {{ number_format($pnsTotal) }}
-                        </div>
-                    </div>
+        $totalPppkPwL = array_sum(array_column($this->data, 'pppk_pw_l'));
+        $totalPppkPwP = array_sum(array_column($this->data, 'pppk_pw_p'));
+        $totalPppkPw = $totalPppkPwL + $totalPppkPwP;
 
-                    <!-- PPPK Card -->
-                    <div class="mobile-stat-item pppk">
-                        <div class="mobile-stat-label">
-                            <span>📋</span> PPPK
-                        </div>
-                        <div class="mobile-gender-stats">
-                            <div class="mobile-gender-item">
-                                <div>👨 Laki</div>
-                                <div class="mobile-gender-value">{{ number_format($row->pppk_l) }}</div>
-                            </div>
-                            <div class="mobile-gender-item">
-                                <div>👩 Perempuan</div>
-                                <div class="mobile-gender-value">{{ number_format($row->pppk_p) }}</div>
-                            </div>
-                        </div>
-                        <div class="mobile-total-section">
-                            Total: {{ number_format($pppkTotal) }}
-                        </div>
-                    </div>
+        $grandTotal = $this->totalPegawai;
+    @endphp
 
-                    <!-- PPPK PW Card (full width) -->
-                    <div class="mobile-stat-item pppk-pw" style="grid-column: span 2;">
-                        <div class="mobile-stat-label">
-                            <span>⏰</span> PPPK Paruh Waktu
-                        </div>
-                        <div class="mobile-gender-stats">
-                            <div class="mobile-gender-item">
-                                <div>👨 Laki</div>
-                                <div class="mobile-gender-value">{{ number_format($row->pppk_pw_l) }}</div>
-                            </div>
-                            <div class="mobile-gender-item">
-                                <div>👩 Perempuan</div>
-                                <div class="mobile-gender-value">{{ number_format($row->pppk_pw_p) }}</div>
-                            </div>
-                        </div>
-                        <div class="mobile-total-section">
-                            Total: {{ number_format($pppkPwTotal) }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Progress Bar -->
-                <div class="mobile-progress">
-                    <div class="mobile-progress-item">
-                        <div class="mobile-progress-label">
-                            <span>PNS</span>
-                            <span>{{ number_format($pnsTotal) }} ({{ $totalRow > 0 ? round(($pnsTotal/$totalRow)*100) : 0 }}%)</span>
-                        </div>
-                        <div class="mobile-progress-bar">
-                            <div class="mobile-progress-fill" style="width: {{ $totalRow > 0 ? ($pnsTotal/$totalRow)*100 : 0 }}%"></div>
-                        </div>
-                    </div>
-                    <div class="mobile-progress-item">
-                        <div class="mobile-progress-label">
-                            <span>PPPK</span>
-                            <span>{{ number_format($pppkTotal) }} ({{ $totalRow > 0 ? round(($pppkTotal/$totalRow)*100) : 0 }}%)</span>
-                        </div>
-                        <div class="mobile-progress-bar">
-                            <div class="mobile-progress-fill" style="width: {{ $totalRow > 0 ? ($pppkTotal/$totalRow)*100 : 0 }}%"></div>
-                        </div>
-                    </div>
-                    <div class="mobile-progress-item">
-                        <div class="mobile-progress-label">
-                            <span>PPPK PW</span>
-                            <span>{{ number_format($pppkPwTotal) }} ({{ $totalRow > 0 ? round(($pppkPwTotal/$totalRow)*100) : 0 }}%)</span>
-                        </div>
-                        <div class="mobile-progress-bar">
-                            <div class="mobile-progress-fill" style="width: {{ $totalRow > 0 ? ($pppkPwTotal/$totalRow)*100 : 0 }}%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endforeach
-
-        <!-- Overall Statistics -->
-        @php
-            // Gunakan array_sum untuk menghitung total dari array
-            $totalPnsL = array_sum(array_column($this->data, 'pns_l'));
-            $totalPnsP = array_sum(array_column($this->data, 'pns_p'));
-            $totalPns = $totalPnsL + $totalPnsP;
-
-            $totalPppkL = array_sum(array_column($this->data, 'pppk_l'));
-            $totalPppkP = array_sum(array_column($this->data, 'pppk_p'));
-            $totalPppk = $totalPppkL + $totalPppkP;
-
-            $totalPppkPwL = array_sum(array_column($this->data, 'pppk_pw_l'));
-            $totalPppkPwP = array_sum(array_column($this->data, 'pppk_pw_p'));
-            $totalPppkPw = $totalPppkPwL + $totalPppkPwP;
-
-            $grandTotal = $this->totalPegawai;
-            $totalGolongan = count($this->data);
-        @endphp
-
-        <div class="mobile-overall-stats">
-            <div class="mobile-overall-title">
-                📊 REKAPITULASI KESELURUHAN
-            </div>
-            <div class="mobile-overall-grid">
-                <div class="mobile-overall-item">
-                    <div class="mobile-overall-label">👔 PNS</div>
-                    <div class="mobile-overall-value">{{ number_format($totalPns) }}</div>
-                </div>
-                <div class="mobile-overall-item">
-                    <div class="mobile-overall-label">📋 PPPK</div>
-                    <div class="mobile-overall-value">{{ number_format($totalPppk) }}</div>
-                </div>
-                <div class="mobile-overall-item">
-                    <div class="mobile-overall-label">⏰ PPPK PW</div>
-                    <div class="mobile-overall-value">{{ number_format($totalPppkPw) }}</div>
-                </div>
-                <div class="mobile-overall-item">
-                    <div class="mobile-overall-label">🏢 Total Golongan</div>
-                    <div class="mobile-overall-value">{{ number_format($totalGolongan) }}</div>
-                </div>
-                <div class="mobile-overall-item mobile-grand-total">
-                    <div class="mobile-overall-label">🎯 GRAND TOTAL</div>
-                    <div class="mobile-overall-value">{{ number_format($grandTotal) }}</div>
-                </div>
-            </div>
+    <div class="mobile-info-cards">
+        <div class="info-card">
+            <div class="info-card-label">👔 PNS</div>
+            <div class="info-card-value">{{ number_format($totalPns) }}</div>
         </div>
-
-        <!-- Additional Info Card -->
-        <div style="background: #f8fafc; border-radius: 12px; padding: 12px; margin-top: 16px; text-align: center; border: 1px solid #e2e8f0;">
-            <div style="font-size: 12px; color: #64748b;">
-                <span>📱 </span>Geser untuk melihat detail |
-                <span>🔄 </span>{{ now()->format('d/m/Y H:i') }}
-            </div>
+        <div class="info-card">
+            <div class="info-card-label">📋 PPPK</div>
+            <div class="info-card-value">{{ number_format($totalPppk) }}</div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-label">⏰ PPPK PW</div>
+            <div class="info-card-value">{{ number_format($totalPppkPw) }}</div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-label">🎯 TOTAL</div>
+            <div class="info-card-value">{{ number_format($grandTotal) }}</div>
         </div>
     </div>
 
-    <!-- ================== DESKTOP (TABEL) ================== -->
-    <div class="desktop-view overflow-x-auto">
-        <table class="custom-statistik-table min-w-[900px]">
+    <!-- Table with Horizontal Scroll -->
+    <div class="table-wrapper">
+        <table class="custom-statistik-table">
             <thead>
                 <tr>
                     <th rowspan="2" class="text-left">Golongan</th>
@@ -488,9 +228,15 @@
                     <th rowspan="2">Total</th>
                 </tr>
                 <tr>
-                    <th>L</th><th>P</th><th>Total</th>
-                    <th>L</th><th>P</th><th>Total</th>
-                    <th>L</th><th>P</th><th>Total</th>
+                    <th>L</th>
+                    <th>P</th>
+                    <th>Total</th>
+                    <th>L</th>
+                    <th>P</th>
+                    <th>Total</th>
+                    <th>L</th>
+                    <th>P</th>
+                    <th>Total</th>
                 </tr>
             </thead>
 
@@ -499,55 +245,63 @@
                     @php
                         $totalRow = $row->pns_l + $row->pns_p + $row->pppk_l + $row->pppk_p + $row->pppk_pw_l + $row->pppk_pw_p;
                     @endphp
-                    <tr>
+                    <tr class="hover:bg-gray-50">
                         <td class="text-left font-bold">{{ $row->golongan ?? '-' }}</td>
 
-                        <td>{{ number_format($row->pns_l) }}</td>
-                        <td>{{ number_format($row->pns_p) }}</td>
-                        <td class="font-bold">{{ number_format($row->pns_l + $row->pns_p) }}</td>
+                        <!-- PNS -->
+                        <td class="{{ $row->pns_l > 0 ? 'font-semibold' : '' }}">{{ number_format($row->pns_l) }}</td>
+                        <td class="{{ $row->pns_p > 0 ? 'font-semibold' : '' }}">{{ number_format($row->pns_p) }}</td>
+                        <td class="font-bold bg-blue-50">{{ number_format($row->pns_l + $row->pns_p) }}</td>
 
-                        <td>{{ number_format($row->pppk_l) }}</td>
-                        <td>{{ number_format($row->pppk_p) }}</td>
-                        <td class="font-bold">{{ number_format($row->pppk_l + $row->pppk_p) }}</td>
+                        <!-- PPPK -->
+                        <td class="{{ $row->pppk_l > 0 ? 'font-semibold' : '' }}">{{ number_format($row->pppk_l) }}</td>
+                        <td class="{{ $row->pppk_p > 0 ? 'font-semibold' : '' }}">{{ number_format($row->pppk_p) }}</td>
+                        <td class="font-bold bg-green-50">{{ number_format($row->pppk_l + $row->pppk_p) }}</td>
 
-                        <td>{{ number_format($row->pppk_pw_l) }}</td>
-                        <td>{{ number_format($row->pppk_pw_p) }}</td>
-                        <td class="font-bold">{{ number_format($row->pppk_pw_l + $row->pppk_pw_p) }}</td>
+                        <!-- PPPK PW -->
+                        <td class="{{ $row->pppk_pw_l > 0 ? 'font-semibold' : '' }}">{{ number_format($row->pppk_pw_l) }}</td>
+                        <td class="{{ $row->pppk_pw_p > 0 ? 'font-semibold' : '' }}">{{ number_format($row->pppk_pw_p) }}</td>
+                        <td class="font-bold bg-purple-50">{{ number_format($row->pppk_pw_l + $row->pppk_pw_p) }}</td>
 
-                        <td class="font-bold">{{ number_format($totalRow) }}</td>
+                        <!-- Total Row -->
+                        <td class="font-bold bg-gray-100">{{ number_format($totalRow) }}</td>
                     </tr>
                 @endforeach
             </tbody>
 
-            <tfoot class="bg-gray-100">
-                @php
-                    $totalPnsL = array_sum(array_column($this->data, 'pns_l'));
-                    $totalPnsP = array_sum(array_column($this->data, 'pns_p'));
-                    $totalPppkL = array_sum(array_column($this->data, 'pppk_l'));
-                    $totalPppkP = array_sum(array_column($this->data, 'pppk_p'));
-                    $totalPppkPwL = array_sum(array_column($this->data, 'pppk_pw_l'));
-                    $totalPppkPwP = array_sum(array_column($this->data, 'pppk_pw_p'));
-                @endphp
-                <tr>
-                    <td class="text-left font-bold">TOTAL</td>
+            <tfoot class="bg-gray-100 font-bold">
+                <tr class="border-t-2 border-black">
+                    <td class="text-left font-bold text-base">TOTAL</td>
 
+                    <!-- PNS Totals -->
                     <td class="font-bold">{{ number_format($totalPnsL) }}</td>
                     <td class="font-bold">{{ number_format($totalPnsP) }}</td>
-                    <td class="font-bold">{{ number_format($totalPnsL + $totalPnsP) }}</td>
+                    <td class="font-bold bg-blue-100">{{ number_format($totalPns) }}</td>
 
+                    <!-- PPPK Totals -->
                     <td class="font-bold">{{ number_format($totalPppkL) }}</td>
                     <td class="font-bold">{{ number_format($totalPppkP) }}</td>
-                    <td class="font-bold">{{ number_format($totalPppkL + $totalPppkP) }}</td>
+                    <td class="font-bold bg-green-100">{{ number_format($totalPppk) }}</td>
 
+                    <!-- PPPK PW Totals -->
                     <td class="font-bold">{{ number_format($totalPppkPwL) }}</td>
                     <td class="font-bold">{{ number_format($totalPppkPwP) }}</td>
-                    <td class="font-bold">{{ number_format($totalPppkPwL + $totalPppkPwP) }}</td>
+                    <td class="font-bold bg-purple-100">{{ number_format($totalPppkPw) }}</td>
 
-                    <td class="font-bold">{{ number_format($this->totalPegawai) }}</td>
+                    <!-- Grand Total -->
+                    <td class="font-bold bg-gray-200 text-base">{{ number_format($grandTotal) }}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
 
+    <!-- Info tambahan untuk mobile -->
+    <div style="padding: 12px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; background: #f9fafb;">
+        <span>📱 Geser tabel ke kanan untuk melihat lengkap</span>
+        <span style="margin: 0 8px">•</span>
+        <span>🔄 Update: {{ now()->format('d/m/Y H:i') }}</span>
+        <span style="margin: 0 8px">•</span>
+        <span>📊 {{ count($this->data) }} Golongan</span>
+    </div>
 </div>
 </x-filament::page>
