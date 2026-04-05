@@ -9,6 +9,8 @@
             font-size: 11px;
             margin: 15px;
             font-weight: normal;
+            background: #fff !important;
+            background-image: none !important;
         }
 
         h2 {
@@ -30,26 +32,31 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            border-spacing: 0; /* Tambahkan ini */
             margin-top: 10px;
+            border: 1px solid #000;
         }
 
         th, td {
-            border: 2px solid #000; /* Garis lebih tebal */
-            padding: 10px 8px;
+            border: 1px solid #000 !important; /* Gunakan !important agar tidak tertutup bg-color */
+            padding: 8px 6px;
             vertical-align: middle;
+            box-sizing: border-box;
         }
 
         th {
-            background-color: #e0e0e0;
+            background-color: #e0e0e0 !important;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 11px;
             color: #000;
+            text-align: center;
         }
 
         td {
-            font-size: 11px;
-            font-weight: 500; /* Sedikit lebih tebal */
+            font-size: 10px;
+            font-weight: 500;
             color: #000;
+            text-align: center;
         }
 
         .text-left {
@@ -77,7 +84,7 @@
 
         .total-row td {
             font-weight: bold;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .header-info {
@@ -86,25 +93,44 @@
             font-weight: normal;
         }
 
-        /* Untuk header tabel */
         thead th {
-            border: 2px solid #000;
+            border: 1px solid #000;
         }
 
-        /* Membuat border lebih jelas */
         table {
-            border: 2px solid #000;
+            border: 1px solid #000;
         }
 
-        /* Styling untuk total */
         tfoot td {
             font-weight: bold;
             background-color: #f5f5f5;
         }
 
-        /* Garis bawah untuk header */
-        .header-border {
-            border-bottom: 2px solid #000;
+        .bg-blue {
+            background-color: #dbeafe;
+        }
+
+        .bg-green {
+            background-color: #d1fae5;
+        }
+
+        .bg-purple {
+            background-color: #f3e8ff;
+        }
+
+        .bg-gray {
+            background-color: #f3f4f6;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .separator-row td {
+                background-color: #e5e7eb !important;
+                height: 10px;
+                padding: 0;
+                border: 1px solid #000 !important;
         }
     </style>
 </head>
@@ -119,80 +145,223 @@
         <div><strong>Periode:</strong> Seluruh Data Aktif</div>
     </div>
 
+    @php
+        // Fungsi untuk mengurutkan data
+        function sortDataForPdf($data) {
+            $pnsData = [];
+            $pppkData = [];
+            $pppkPwData = [];
+
+            // Urutan golongan PNS yang benar
+            $pnsOrder = [
+                'I/a', 'I/b', 'I/c', 'I/d',
+                'II/a', 'II/b', 'II/c', 'II/d',
+                'III/a', 'III/b', 'III/c', 'III/d',
+                'IV/a', 'IV/b', 'IV/c', 'IV/d', 'IV/e'
+            ];
+
+            // Urutan golongan PPPK
+            $pppkOrder = [
+                'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII',
+                'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII'
+            ];
+
+            foreach ($data as $item) {
+                $golongan = trim($item->golongan ?? '');
+
+                // Cek apakah ini PPPK Paruh Waktu (tanpa golongan/kosong)
+                if (empty($golongan) || $golongan === '' || $golongan === null) {
+                    $pppkPwData[] = $item;
+                }
+                // Cek apakah ini PPPK (format "I", "II", "III", dst tanpa garis miring)
+                elseif (in_array(strtoupper($golongan), $pppkOrder) || preg_match('/^[I|V|X]+$/i', $golongan)) {
+                    $pppkData[] = $item;
+                }
+                // Sisanya adalah PNS (format "I/a", "I/b", "II/a", dll)
+                else {
+                    $pnsData[] = $item;
+                }
+            }
+
+            // Urutkan PNS berdasarkan urutan yang sudah ditentukan
+            usort($pnsData, function($a, $b) use ($pnsOrder) {
+                $golA = trim($a->golongan ?? '');
+                $golB = trim($b->golongan ?? '');
+                $posA = array_search($golA, $pnsOrder);
+                $posB = array_search($golB, $pnsOrder);
+                return ($posA !== false ? $posA : 999) <=> ($posB !== false ? $posB : 999);
+            });
+
+            // Urutkan PPPK berdasarkan urutan yang sudah ditentukan
+            usort($pppkData, function($a, $b) use ($pppkOrder) {
+                $golA = strtoupper(trim($a->golongan ?? ''));
+                $golB = strtoupper(trim($b->golongan ?? ''));
+                $posA = array_search($golA, $pppkOrder);
+                $posB = array_search($golB, $pppkOrder);
+                return ($posA !== false ? $posA : 999) <=> ($posB !== false ? $posB : 999);
+            });
+
+            // Gabungkan semua data dengan urutan: PNS, PPPK, PPPK Paruh Waktu
+            return array_merge($pnsData, $pppkData, $pppkPwData);
+        }
+
+        // Urutkan data
+        $sortedData = sortDataForPdf($data);
+
+        // Hitung total keseluruhan
+        $grandTotalPnsL = 0;
+        $grandTotalPnsP = 0;
+        $grandTotalPns = 0;
+        $grandTotalPppkL = 0;
+        $grandTotalPppkP = 0;
+        $grandTotalPppk = 0;
+        $grandTotalPppkPwL = 0;
+        $grandTotalPppkPwP = 0;
+        $grandTotalPppkPw = 0;
+        $grandTotal = 0;
+
+        // Hitung jumlah PNS dan PPPK untuk separator
+        $pnsCount = 0;
+        $pppkCount = 0;
+        foreach ($sortedData as $row) {
+            $golongan = trim($row->golongan ?? '');
+            if (empty($golongan) || $golongan === '' || $golongan === null) {
+                break;
+            } elseif (in_array(strtoupper($golongan), ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII'])) {
+                $pppkCount++;
+            } else {
+                $pnsCount++;
+            }
+        }
+    @endphp
+
     <table>
         <thead>
             <tr>
-                <th rowspan="2" class="text-left" width="15%">GOLONGAN</th>
-                <th colspan="2" width="20%">PNS</th>
-                <th colspan="2" width="20%">PPPK</th>
-                <th colspan="2" width="25%">PPPK PARUH WAKTU</th>
+                <th rowspan="2" class="text-left" width="12%">GOLONGAN</th>
+                <th colspan="3" width="25%">PNS</th>
+                <th colspan="3" width="25%">PPPK</th>
+                <th colspan="3" width="28%">PPPK PW</th>
+                <th rowspan="2" width="10%">TOTAL</th>
             </tr>
             <tr>
-                <th width="10%">LAKI-LAKI</th>
-                <th width="10%">PEREMPUAN</th>
-                <th width="10%">LAKI-LAKI</th>
-                <th width="10%">PEREMPUAN</th>
-                <th width="12%">LAKI-LAKI</th>
-                <th width="13%">PEREMPUAN</th>
+                <th width="7%">L</th>
+                <th width="7%">P</th>
+                <th width="8%">TOTAL</th>
+                <th width="7%">L</th>
+                <th width="7%">P</th>
+                <th width="8%">TOTAL</th>
+                <th width="8%">L</th>
+                <th width="8%">P</th>
+                <th width="9%">TOTAL</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($data as $row)
+            @forelse($sortedData as $index => $row)
+                @php
+                    $golongan = trim($row->golongan ?? '');
+                    $isPppkPw = empty($golongan) || $golongan === '' || $golongan === null;
+                    $isPppk = !$isPppkPw && in_array(strtoupper($golongan), ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII']);
+                    $isPns = !$isPppkPw && !$isPppk;
+
+                    $pnsTotal = ($row->pns_l ?? 0) + ($row->pns_p ?? 0);
+                    $pppkTotal = ($row->pppk_l ?? 0) + ($row->pppk_p ?? 0);
+                    $pppkPwTotal = ($row->pppk_pw_l ?? 0) + ($row->pppk_pw_p ?? 0);
+                    $rowTotal = $pnsTotal + $pppkTotal + $pppkPwTotal;
+
+                    // Tentukan label golongan yang ditampilkan
+                    $displayGolongan = $row->golongan ?? '-';
+                    if ($isPppkPw) {
+                        $displayGolongan = 'PPPK PW';
+                    } elseif ($isPppk) {
+                        $displayGolongan = $displayGolongan;
+                    }
+
+                    // Cek apakah perlu separator
+                    $showSeparator = false;
+                    if ($index == $pnsCount && $pnsCount > 0 && $pppkCount > 0) {
+                        $showSeparator = true;
+                    } elseif ($index == ($pnsCount + $pppkCount) && $pppkCount > 0 && count($sortedData) > ($pnsCount + $pppkCount)) {
+                        $showSeparator = true;
+                    }
+
+                    // Akumulasi total
+                    $grandTotalPnsL += $row->pns_l ?? 0;
+                    $grandTotalPnsP += $row->pns_p ?? 0;
+                    $grandTotalPns += $pnsTotal;
+                    $grandTotalPppkL += $row->pppk_l ?? 0;
+                    $grandTotalPppkP += $row->pppk_p ?? 0;
+                    $grandTotalPppk += $pppkTotal;
+                    $grandTotalPppkPwL += $row->pppk_pw_l ?? 0;
+                    $grandTotalPppkPwP += $row->pppk_pw_p ?? 0;
+                    $grandTotalPppkPw += $pppkPwTotal;
+                    $grandTotal += $rowTotal;
+                @endphp
+
+                @if($showSeparator)
+                    <tr class="separator-row">
+                        <td colspan="11">&nbsp;</td>
+                    </tr>
+                @endif
+
                 <tr>
-                    <td class="text-left"><strong>{{ $row->golongan ?? '-' }}</strong></td>
-                    <td class="text-center"><strong>{{ number_format($row->pns_l ?: 0) }}</strong></td>
-                    <td class="text-center"><strong>{{ number_format($row->pns_p ?: 0) }}</strong></td>
-                    <td class="text-center"><strong>{{ number_format($row->pppk_l ?: 0) }}</strong></td>
-                    <td class="text-center"><strong>{{ number_format($row->pppk_p ?: 0) }}</strong></td>
-                    <td class="text-center"><strong>{{ number_format($row->pppk_pw_l ?: 0) }}</strong></td>
-                    <td class="text-center"><strong>{{ number_format($row->pppk_pw_p ?: 0) }}</strong></td>
+                    <td class="text-left font-bold">
+                        @if($isPppkPw)
+                            <span>{{ $displayGolongan }}</span>
+                        @elseif($isPppk)
+                            <span>{{ $displayGolongan }}</span>
+                        @else
+                            <span>{{ $displayGolongan }}</span>
+                        @endif
+                    </td>
+
+                    <!-- PNS -->
+                    <td>{{ number_format($row->pns_l ?? 0) }}</td>
+                    <td>{{ number_format($row->pns_p ?? 0) }}</td>
+                    <td class="font-bold bg-blue">{{ number_format($pnsTotal) }}</td>
+
+                    <!-- PPPK -->
+                    <td>{{ number_format($row->pppk_l ?? 0) }}</td>
+                    <td>{{ number_format($row->pppk_p ?? 0) }}</td>
+                    <td class="font-bold bg-green">{{ number_format($pppkTotal) }}</td>
+
+                    <!-- PPPK Paruh Waktu -->
+                    <td>{{ number_format($row->pppk_pw_l ?? 0) }}</td>
+                    <td>{{ number_format($row->pppk_pw_p ?? 0) }}</td>
+                    <td class="font-bold bg-purple">{{ number_format($pppkPwTotal) }}</td>
+
+                    <!-- Total Row -->
+                    <td class="font-bold bg-gray">{{ number_format($rowTotal) }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center"><strong>TIDAK ADA DATA</strong></td>
+                    <td colspan="13" class="text-center font-bold">TIDAK ADA DATA</td>
                 </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr class="total-row">
-                <td class="text-left"><strong>TOTAL</strong></td>
-                <td class="text-center"><strong>{{ number_format($totals['pns_l']) }}</strong></td>
-                <td class="text-center"><strong>{{ number_format($totals['pns_p']) }}</strong></td>
-                <td class="text-center"><strong>{{ number_format($totals['pppk_l']) }}</strong></td>
-                <td class="text-center"><strong>{{ number_format($totals['pppk_p']) }}</strong></td>
-                <td class="text-center"><strong>{{ number_format($totals['pppk_pw_l']) }}</strong></td>
-                <td class="text-center"><strong>{{ number_format($totals['pppk_pw_p']) }}</strong></td>
+                <td class="text-left font-bold">TOTAL</td>
+
+                <!-- PNS Total -->
+                <td class="font-bold">{{ number_format($grandTotalPnsL) }}</td>
+                <td class="font-bold">{{ number_format($grandTotalPnsP) }}</td>
+                <td class="font-bold bg-blue">{{ number_format($grandTotalPns) }}</td>
+
+                <!-- PPPK Total -->
+                <td class="font-bold">{{ number_format($grandTotalPppkL) }}</td>
+                <td class="font-bold">{{ number_format($grandTotalPppkP) }}</td>
+                <td class="font-bold bg-green">{{ number_format($grandTotalPppk) }}</td>
+
+                <!-- PPPK Paruh Waktu Total -->
+                <td class="font-bold">{{ number_format($grandTotalPppkPwL) }}</td>
+                <td class="font-bold">{{ number_format($grandTotalPppkPwP) }}</td>
+                <td class="font-bold bg-purple">{{ number_format($grandTotalPppkPw) }}</td>
+
+                <!-- Grand Total -->
+                <td class="font-bold bg-gray">{{ number_format($grandTotal) }}</td>
             </tr>
         </tfoot>
     </table>
-
-    <div class="footer">
-        <table style="border: none; margin-top: 20px;">
-            <tr style="border: none;">
-                <td style="border: none; width: 60%;"></td>
-                <td style="border: none; text-align: center;">
-                    <div style="border-top: 2px solid #000; margin-top: 30px; padding-top: 5px;">
-                        <strong>Mengetahui,</strong><br>
-                        <span style="font-size: 10px;">Kepala Badan Kepegawaian</span>
-                    </div>
-                </td>
-                <td style="border: none; text-align: center;">
-                    <div style="border-top: 2px solid #000; margin-top: 30px; padding-top: 5px;">
-                        <strong>Petugas,</strong><br>
-                        <span style="font-size: 10px;">Admin</span>
-                    </div>
-                </td>
-            </tr>
-            <tr style="border: none;">
-                <td style="border: none;"></td>
-                <td style="border: none; text-align: center; padding-top: 40px;">
-                    (____________________)
-                </td>
-                <td style="border: none; text-align: center; padding-top: 40px;">
-                    ({{ auth()->user()->name ?? '____________________' }})
-                </td>
-            </tr>
-        </table>
-    </div>
 </body>
 </html>

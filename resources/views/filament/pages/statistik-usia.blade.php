@@ -1,16 +1,17 @@
 <x-filament::page>
-    @push('styles')
+ @push('styles')
     <style>
         .custom-statistik-table {
             border-collapse: collapse;
             width: 100%;
+            border: 2px solid #000;
+            min-width: 800px;
         }
 
         .custom-statistik-table th,
         .custom-statistik-table td {
-            border: 2px solid #000;
-            padding: 0.75rem 1rem;
-            vertical-align: middle;
+            border: 2px solid #000 !important;
+            padding: 8px 12px;
         }
 
         .custom-statistik-table th {
@@ -42,180 +43,314 @@
             transition: all 0.2s;
             border: none;
             cursor: pointer;
-            margin-bottom: 1rem;
+        }
+
+        .btn-export-pdf {
+            background-color: #dc2626;
+        }
+
+        .btn-export-excel {
+            background-color: #10b981;
         }
 
         .btn-export:hover {
-            background-color: #dc2626;
             transform: translateY(-1px);
-        }
-
-        .total-info {
-            background: #f3f4f6;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .statistik-card {
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            filter: brightness(1.05);
         }
 
         .statistik-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 1rem 1.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
             font-weight: bold;
             font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .statistik-body {
-            padding: 1rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
 
-        .text-bold {
+        /* Mobile Styles - Table with Horizontal Scroll */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Custom scrollbar for better UX */
+        .table-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Separator between groups */
+        .group-separator {
+            border-top: 3px solid #000 !important;
+        }
+
+        /* Mobile specific table styling */
+        @media (max-width: 768px) {
+            .custom-statistik-table {
+                font-size: 12px;
+                min-width: 700px;
+            }
+
+            .custom-statistik-table th,
+            .custom-statistik-table td {
+                padding: 6px 8px;
+            }
+
+            .statistik-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            /* Sticky first column for better readability */
+            .custom-statistik-table th:first-child,
+            .custom-statistik-table td:first-child {
+                position: sticky;
+                left: 0;
+                background-color: white;
+                z-index: 1;
+            }
+
+            .custom-statistik-table th:first-child {
+                background-color: #e5e7eb;
+                z-index: 2;
+            }
+
+            .custom-statistik-table tfoot td:first-child {
+                background-color: #f3f4f6;
+            }
+        }
+
+        /* Info cards for mobile summary */
+        .mobile-info-cards {
+            display: none;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-info-cards {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .info-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 12px;
+                border-radius: 8px;
+                text-align: center;
+            }
+
+            .info-card-label {
+                font-size: 11px;
+                opacity: 0.9;
+                margin-bottom: 4px;
+            }
+
+            .info-card-value {
+                font-size: 20px;
+                font-weight: bold;
+            }
+        }
+
+        /* Group row styling */
+        .group-header-row {
+            background-color: #f3f4f6;
+        }
+
+        .group-header-row td {
+            background-color: #e5e7eb;
             font-weight: bold;
+            text-align: left;
+            padding: 8px 12px;
         }
 
-        .bg-total {
-            background-color: #f0f0f0;
+        /* Print styles for PDF */
+        @media print {
+            .btn-export, .btn-export-pdf, .btn-export-excel, .statistik-header button {
+                display: none !important;
+            }
+
+            .statistik-header {
+                background: #667eea !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .custom-statistik-table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            .custom-statistik-table th {
+                background-color: #e5e7eb !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body {
+                padding: 20px;
+                font-size: 12px;
+            }
         }
     </style>
     @endpush
-
-    <div>
-        <div class="flex justify-between items-center mb-4">
-            <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
-                    Statistik Pegawai Berdasarkan Usia
-                </h2>
-                <div class="total-info mt-2">
-                    📊 Total Seluruh Pegawai: <strong>{{ number_format($this->totalPegawai) }}</strong> Orang
-                </div>
-            </div>
-
-            <button
-                wire:click="exportPdf"
-                class="btn-export"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Export PDF
-            </button>
-        </div>
-
         <div class="statistik-card">
             <div class="statistik-header">
-                📈 Distribusi Pegawai Berdasarkan Kelompok Usia
+                <div>📈 Distribusi Pegawai Berdasarkan Kelompok Usia</div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-export btn-export-pdf" wire:click="exportPdf">
+                        📄 Export ke PDF
+                    </button>
+                    <button class="btn-export btn-export-excel" onclick="exportToExcel()">
+                        📊 Export ke Excel
+                    </button>
+                </div>
             </div>
             <div class="statistik-body">
-                <div class="overflow-x-auto">
+                <div class="table-wrapper">
                     <table class="custom-statistik-table">
                         <thead>
                             <tr>
-                                <th rowspan="2" class="text-left" width="12%">Kelompok Usia</th>
+                                <th rowspan="2" class="text-left">Kelompok Usia</th>
                                 <th colspan="3">PNS</th>
                                 <th colspan="3">PPPK</th>
                                 <th colspan="3">PPPK Paruh Waktu</th>
-                                <th rowspan="2" width="10%">Total</th>
+                                <th rowspan="2">Total</th>
                             </tr>
                             <tr>
                                 <!-- PNS -->
-                                <th width="8%">L</th>
-                                <th width="8%">P</th>
-                                <th width="8%">Total</th>
+                                <th>L</th>
+                                <th>P</th>
+                                <th>Total</th>
                                 <!-- PPPK -->
-                                <th width="8%">L</th>
-                                <th width="8%">P</th>
-                                <th width="8%">Total</th>
+                                <th>L</th>
+                                <th>P</th>
+                                <th>Total</th>
                                 <!-- PPPK Paruh Waktu -->
-                                <th width="8%">L</th>
-                                <th width="8%">P</th>
-                                <th width="8%">Total</th>
+                                <th>L</th>
+                                <th>P</th>
+                                <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($this->data as $row)
-                                <tr>
+                                <tr class="hover:bg-gray-50">
                                     <td class="text-left font-bold">{{ $row->range }} tahun</td>
 
                                     <!-- PNS -->
                                     <td>{{ number_format($row->pns_l) }}</td>
                                     <td>{{ number_format($row->pns_p) }}</td>
-                                    <td class="font-bold">{{ number_format($row->pns_total) }}</td>
+                                    <td class="font-bold bg-blue-50">{{ number_format($row->pns_total) }}</td>
 
                                     <!-- PPPK -->
                                     <td>{{ number_format($row->pppk_l) }}</td>
                                     <td>{{ number_format($row->pppk_p) }}</td>
-                                    <td class="font-bold">{{ number_format($row->pppk_total) }}</td>
+                                    <td class="font-bold bg-green-50">{{ number_format($row->pppk_total) }}</td>
 
                                     <!-- PPPK Paruh Waktu -->
                                     <td>{{ number_format($row->pppk_pw_l) }}</td>
                                     <td>{{ number_format($row->pppk_pw_p) }}</td>
-                                    <td class="font-bold">{{ number_format($row->pppk_pw_total) }}</td>
+                                    <td class="font-bold bg-purple-50">{{ number_format($row->pppk_pw_total) }}</td>
 
                                     <!-- Total -->
-                                    <td class="font-bold bg-total">{{ number_format($row->total) }}</td>
+                                    <td class="font-bold bg-gray-100">{{ number_format($row->total) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
-                        <tfoot class="bg-total">
-                            <tr class="font-bold">
+                        <tfoot class="bg-gray-100 font-bold">
+                            <tr class="border-t-2 border-black">
                                 <td class="text-left">TOTAL</td>
 
                                 <!-- PNS Total -->
                                 <td>{{ number_format(collect($this->data)->sum('pns_l')) }}</td>
                                 <td>{{ number_format(collect($this->data)->sum('pns_p')) }}</td>
-                                <td>{{ number_format(collect($this->data)->sum('pns_total')) }}</td>
+                                <td class="bg-blue-100">{{ number_format(collect($this->data)->sum('pns_total')) }}</td>
 
                                 <!-- PPPK Total -->
                                 <td>{{ number_format(collect($this->data)->sum('pppk_l')) }}</td>
                                 <td>{{ number_format(collect($this->data)->sum('pppk_p')) }}</td>
-                                <td>{{ number_format(collect($this->data)->sum('pppk_total')) }}</td>
+                                <td class="bg-green-100">{{ number_format(collect($this->data)->sum('pppk_total')) }}</td>
 
                                 <!-- PPPK Paruh Waktu Total -->
                                 <td>{{ number_format(collect($this->data)->sum('pppk_pw_l')) }}</td>
                                 <td>{{ number_format(collect($this->data)->sum('pppk_pw_p')) }}</td>
-                                <td>{{ number_format(collect($this->data)->sum('pppk_pw_total')) }}</td>
+                                <td class="bg-purple-100">{{ number_format(collect($this->data)->sum('pppk_pw_total')) }}</td>
 
                                 <!-- Grand Total -->
-                                <td class="font-bold">{{ number_format(collect($this->data)->sum('total')) }}</td>
+                                <td class="bg-gray-200">{{ number_format(collect($this->data)->sum('total')) }}</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             </div>
-        </div>
 
-        <!-- Chart sederhana menggunakan CSS (opsional) -->
-        <div class="statistik-card mt-4">
-            <div class="statistik-header">
-                📊 Visualisasi Distribusi Usia
-            </div>
-            <div class="statistik-body">
-                <div class="space-y-2">
-                    @foreach($this->data as $row)
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="font-bold">{{ $row->range }} tahun</span>
-                                <span>{{ number_format($row->total) }} orang ({{ round(($row->total / $this->totalPegawai) * 100, 1) }}%)</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
-                                <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-bold"
-                                     style="width: {{ ($row->total / $this->totalPegawai) * 100 }}%">
-                                    {{ round(($row->total / $this->totalPegawai) * 100, 1) }}%
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+        <!-- Info untuk mobile -->
+        <div class="mt-4 text-center text-sm text-gray-500" style="padding: 8px; background: #f9fafb; border-radius: 8px;">
+            <span>📱 Geser tabel ke kanan untuk melihat data lengkap</span>
+            <span style="margin: 0 8px">•</span>
+            <span>🔄 Update: {{ now()->format('d/m/Y H:i') }}</span>
+            <span style="margin: 0 8px">•</span>
+            <span>📊 {{ count($this->data) }} Kelompok Usia</span>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        function exportToExcel() {
+            // Get the table
+            const table = document.querySelector('.custom-statistik-table');
+
+            // Clone the table to avoid modifying the original
+            const cloneTable = table.cloneNode(true);
+
+            // Create a new workbook
+            const wb = XLSX.utils.book_new();
+
+            // Convert table to worksheet
+            const ws = XLSX.utils.table_to_sheet(cloneTable, { raw: true });
+
+            // Adjust column widths
+            ws['!cols'] = [
+                {wch: 20}, // Kelompok Usia
+                {wch: 10}, {wch: 10}, {wch: 10}, // PNS L, P, Total
+                {wch: 10}, {wch: 10}, {wch: 10}, // PPPK L, P, Total
+                {wch: 12}, {wch: 12}, {wch: 12}, // PPPK PW L, P, Total
+                {wch: 12}  // Total
+            ];
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Statistik Usia');
+
+            // Export to Excel
+            XLSX.writeFile(wb, 'statistik_usia_' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.xlsx');
+        }
+    </script>
 </x-filament::page>
