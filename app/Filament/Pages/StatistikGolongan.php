@@ -13,6 +13,7 @@ use UnitEnum;
 class StatistikGolongan extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $modelLabel = 'Statistik Golongan';
     protected string $view = 'filament.pages.statistik-golongan';
     protected static ?string $navigationLabel = 'Statistik Golongan';
     protected static ?string $title = 'Statistik Pegawai per Golongan';

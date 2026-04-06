@@ -14,6 +14,7 @@ class StatistikUsia extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
     protected string $view = 'filament.pages.statistik-usia';
+    protected static ?string $modelLabel = 'statistik usia';
     protected static ?string $navigationLabel = 'Statistik Usia';
     protected static ?string $title = 'Statistik Pegawai Berdasarkan Usia';
     protected static ?int $navigationSort = 3;
@@ -175,15 +176,15 @@ class StatistikUsia extends Page
 
         // Definisikan range usia
         $ageRanges = [
-            '< 25' => ['min' => 0, 'max' => 24, 'label' => '< 25 tahun'],
-            '25 - 29' => ['min' => 25, 'max' => 29, 'label' => '25 - 29 tahun'],
-            '30 - 34' => ['min' => 30, 'max' => 34, 'label' => '30 - 34 tahun'],
-            '35 - 39' => ['min' => 35, 'max' => 39, 'label' => '35 - 39 tahun'],
-            '40 - 44' => ['min' => 40, 'max' => 44, 'label' => '40 - 44 tahun'],
-            '45 - 49' => ['min' => 45, 'max' => 49, 'label' => '45 - 49 tahun'],
-            '50 - 54' => ['min' => 50, 'max' => 54, 'label' => '50 - 54 tahun'],
-            '55 - 59' => ['min' => 55, 'max' => 59, 'label' => '55 - 59 tahun'],
-            '=>60' => ['min' => 60, 'max' => 999, 'label' => '> 60 tahun']
+            '< 25' => ['min' => 0, 'max' => 25, 'label' => '< 25 tahun'],
+            '25 - 29' => ['min' => 26, 'max' => 30, 'label' => '25 - 29 tahun'],
+            '30 - 34' => ['min' => 31, 'max' => 35, 'label' => '30 - 34 tahun'],
+            '35 - 39' => ['min' => 36, 'max' => 40, 'label' => '35 - 39 tahun'],
+            '40 - 44' => ['min' => 41, 'max' => 45, 'label' => '40 - 44 tahun'],
+            '45 - 49' => ['min' => 46, 'max' => 50, 'label' => '45 - 49 tahun'],
+            '50 - 54' => ['min' => 51, 'max' => 55, 'label' => '50 - 54 tahun'],
+            '55 - 59' => ['min' => 56, 'max' => 60, 'label' => '55 - 59 tahun'],
+            '=>60' => ['min' => 61, 'max' => 999, 'label' => '> 60 tahun']
         ];
 
         $result = [];

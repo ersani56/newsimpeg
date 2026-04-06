@@ -12,6 +12,7 @@ use UnitEnum;
 class StatistikJabatan extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-briefcase';
+    protected static ?string $modelLabel = 'Statistik Jabatan';
     protected string $view = 'filament.pages.statistik-jabatan';
     protected static ?string $navigationLabel = 'Statistik Jabatan';
     protected static ?string $title = 'Statistik Pegawai per Jenis Jabatan';
@@ -105,10 +106,10 @@ class StatistikJabatan extends Page
                             END
 
                         -- 6. Tenaga Guru (Fungsional) --
-                        WHEN LOWER(jabatan_nama) LIKE '%guru%' THEN 'Tenaga Guru'
+                        WHEN LOWER(jabatan_nama) LIKE '%guru%' THEN 'Fungsional Guru'
 
                         -- 7. Tenaga Kesehatan (Fungsional) --
-                        WHEN LOWER(jabatan_nama) REGEXP 'dokter|perawat|bidan|apoteker|nutrisionis|sanitarian|asisten apoteker' THEN 'Tenaga Kesehatan'
+                        WHEN LOWER(jabatan_nama) REGEXP 'dokter|perawat|bidan|apoteker|nutrisionis|sanitarian|asisten apoteker' THEN 'Fungsional Kesehatan'
 
                         -- 8. Fungsional Lainnya (Fungsional diluar Guru & Nakes) --
                         -- Mengasumsikan ada kolom jenis_jabatan_nama untuk cek tipe 'Fungsional' --
