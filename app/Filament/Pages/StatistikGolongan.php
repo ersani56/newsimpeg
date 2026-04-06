@@ -8,6 +8,7 @@ use Filament\Support\Icons\Heroicon;
 use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Response;
+use UnitEnum;
 
 class StatistikGolongan extends Page
 {
@@ -16,6 +17,7 @@ class StatistikGolongan extends Page
     protected static ?string $navigationLabel = 'Statistik Golongan';
     protected static ?string $title = 'Statistik Pegawai per Golongan';
     protected static ?int $navigationSort = 1;
+    protected static UnitEnum|string|null $navigationGroup = 'Statistik';
 
     public $data = [];
     public $totalPegawai = 0; // <-- Tambahkan properti ini

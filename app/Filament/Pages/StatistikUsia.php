@@ -8,6 +8,7 @@ use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Response;
 use Carbon\Carbon;
+use UnitEnum;
 
 class StatistikUsia extends Page
 {
@@ -16,6 +17,7 @@ class StatistikUsia extends Page
     protected static ?string $navigationLabel = 'Statistik Usia';
     protected static ?string $title = 'Statistik Pegawai Berdasarkan Usia';
     protected static ?int $navigationSort = 3;
+    protected static UnitEnum|string|null $navigationGroup = 'Statistik';
 
 
     public $data = [];
