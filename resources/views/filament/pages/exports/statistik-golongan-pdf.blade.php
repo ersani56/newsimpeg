@@ -135,14 +135,13 @@
     </style>
 </head>
 <body>
-    <h2>STATISTIK PEGAWAI PER GOLONGAN</h2>
+    <h2>STATISTIK PEGAWAI BERDASARKAN GOLONGAN</h2>
     <div class="subtitle">
-        Data Pegawai Berdasarkan Golongan dan Status Kepegawaian
+        Pemerintah Kabupaten Tulang Bawang Barat
     </div>
 
     <div class="header-info">
         <div><strong>Tanggal Cetak:</strong> {{ $date }}</div>
-        <div><strong>Periode:</strong> Seluruh Data Aktif</div>
     </div>
 
     @php

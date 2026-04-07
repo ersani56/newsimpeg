@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Statistik Pegawai Berdasarkan Usia</title>
+    <title>Statistik Pegawai per Jenis Kelamin</title>
     <style>
         body {
             font-family: 'Arial', 'Helvetica', sans-serif;
@@ -134,12 +134,10 @@
         }
     </style>
 </head>
+</head>
 <body>
-    <h2>STATISTIK PEGAWAI BERDASARKAN USIA</h2>
-    <div class="subtitle">
-        Pemerintah Kabupaten Tulang Bawang Barat
-    </div>
-
+    <h2>STATISTIK PEGAWAI BERDASARKAN JENIS KELAMIN</h2>
+    <div class="subtitle">Pemerintah Kabupaten Tulang Bawang Barat</div>
     <div class="header-info">
         <div><strong>Tanggal Cetak:</strong> {{ $date }}</div>
     </div>
@@ -147,64 +145,35 @@
     <table>
         <thead>
             <tr>
-                <th rowspan="2" class="text-left" width="12%">Kelompok Usia</th>
-                <th colspan="3">PNS</th>
-                <th colspan="3">PPPK</th>
-                <th colspan="3">PPPK Paruh Waktu</th>
-                <th rowspan="2" width="10%">Total</th>
-            </tr>
-            <tr>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
+                <th class="text-left">JENIS KELAMIN</th>
+                <th>PNS</th>
+                <th>PPPK</th>
+                <th>PPPK PARUH WAKTU</th>
+                <th class="bg-gray">TOTAL</th>
             </tr>
         </thead>
         <tbody>
             @foreach($data as $row)
+                @php $total = $row->pns + $row->pppk + $row->pppk_pw; @endphp
                 <tr>
-                    <td class="text-left font-bold">{{ $row->range }} tahun</td>
-
-                    <td>{{ number_format($row->pns_l) }}</td>
-                    <td>{{ number_format($row->pns_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pns_total) }}</td>
-
-                    <td>{{ number_format($row->pppk_l) }}</td>
-                    <td>{{ number_format($row->pppk_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pppk_total) }}</td>
-
-                    <td>{{ number_format($row->pppk_pw_l) }}</td>
-                    <td>{{ number_format($row->pppk_pw_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pppk_pw_total) }}</td>
-
-                    <td class="font-bold bg-total">{{ number_format($row->total) }}</td>
+                    <td class="text-left font-bold">{{ strtoupper($row->gender) }}</td>
+                    <td>{{ number_format($row->pns) }}</td>
+                    <td>{{ number_format($row->pppk) }}</td>
+                    <td>{{ number_format($row->pppk_pw) }}</td>
+                    <td class="font-bold bg-gray">{{ number_format($total) }}</td>
                 </tr>
             @endforeach
         </tbody>
-        <tfoot class="bg-total">
-            <tr class="font-bold">
-                <td class="text-left">TOTAL</td>
-
-                <td>{{ number_format($totals['pns_l']) }}</td>
-                <td>{{ number_format($totals['pns_p']) }}</td>
-                <td>{{ number_format($totals['pns_total']) }}</td>
-
-                <td>{{ number_format($totals['pppk_l']) }}</td>
-                <td>{{ number_format($totals['pppk_p']) }}</td>
-                <td>{{ number_format($totals['pppk_total']) }}</td>
-
-                <td>{{ number_format($totals['pppk_pw_l']) }}</td>
-                <td>{{ number_format($totals['pppk_pw_p']) }}</td>
-                <td>{{ number_format($totals['pppk_pw_total']) }}</td>
-
-                <td>{{ number_format($totals['total']) }}</td>
+        <tfoot class="font-bold">
+            <tr style="background-color: #eee;">
+                <td class="text-left">TOTAL KESELURUHAN</td>
+                <td>{{ number_format(collect($data)->sum('pns')) }}</td>
+                <td>{{ number_format(collect($data)->sum('pppk')) }}</td>
+                <td>{{ number_format(collect($data)->sum('pppk_pw')) }}</td>
+                <td>{{ number_format(collect($data)->sum('pns') + collect($data)->sum('pppk') + collect($data)->sum('pppk_pw')) }}</td>
             </tr>
         </tfoot>
     </table>
+    <p style="font-size: 9px; margin-top: 10px;">Dicetak pada: {{ $date }}</p>
 </body>
 </html>

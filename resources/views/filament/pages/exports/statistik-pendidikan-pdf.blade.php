@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Statistik Pegawai Berdasarkan Usia</title>
+    <title>Statistik Pegawai per Pendidikan</title>
     <style>
         body {
             font-family: 'Arial', 'Helvetica', sans-serif;
@@ -135,7 +135,7 @@
     </style>
 </head>
 <body>
-    <h2>STATISTIK PEGAWAI BERDASARKAN USIA</h2>
+    <h2>STATISTIK PEGAWAI BERDASARKAN PENDIDIKAN</h2>
     <div class="subtitle">
         Pemerintah Kabupaten Tulang Bawang Barat
     </div>
@@ -144,65 +144,58 @@
         <div><strong>Tanggal Cetak:</strong> {{ $date }}</div>
     </div>
 
+    @php
+        $pendidikanOrder = ['SD', 'SMP', 'SMA', 'DI', 'DII', 'DIII', 'DIV', 'S1', 'S2', 'S3'];
+        $sortedData = collect($data)->sortBy(function($item) use ($pendidikanOrder) {
+            $index = array_search(strtoupper(trim($item->pendidikan)), $pendidikanOrder);
+            return $index !== false ? $index : 999;
+        });
+    @endphp
+
     <table>
         <thead>
             <tr>
-                <th rowspan="2" class="text-left" width="12%">Kelompok Usia</th>
+                <th rowspan="2" width="18%">PENDIDIKAN</th>
                 <th colspan="3">PNS</th>
                 <th colspan="3">PPPK</th>
-                <th colspan="3">PPPK Paruh Waktu</th>
-                <th rowspan="2" width="10%">Total</th>
+                <th colspan="3">PPPK PW</th>
+                <th rowspan="2" width="10%">TOTAL</th>
             </tr>
             <tr>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
+                <th width="6%">L</th> <th width="6%">P</th> <th width="8%" class="bg-blue">T</th>
+                <th width="6%">L</th> <th width="6%">P</th> <th width="8%" class="bg-green">T</th>
+                <th width="6%">L</th> <th width="6%">P</th> <th width="8%" class="bg-purple">T</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($data as $row)
+            @foreach($sortedData as $row)
+                @php
+                    $pnsT = ($row->pns_l ?? 0) + ($row->pns_p ?? 0);
+                    $pppkT = ($row->pppk_l ?? 0) + ($row->pppk_p ?? 0);
+                    $pppkPwT = ($row->pppk_pw_l ?? 0) + ($row->pppk_pw_p ?? 0);
+                @endphp
                 <tr>
-                    <td class="text-left font-bold">{{ $row->range }} tahun</td>
-
-                    <td>{{ number_format($row->pns_l) }}</td>
-                    <td>{{ number_format($row->pns_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pns_total) }}</td>
-
-                    <td>{{ number_format($row->pppk_l) }}</td>
-                    <td>{{ number_format($row->pppk_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pppk_total) }}</td>
-
-                    <td>{{ number_format($row->pppk_pw_l) }}</td>
-                    <td>{{ number_format($row->pppk_pw_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pppk_pw_total) }}</td>
-
-                    <td class="font-bold bg-total">{{ number_format($row->total) }}</td>
+                    <td class="text-left font-bold">{{ $row->pendidikan ?? '-' }}</td>
+                    <td>{{ $row->pns_l }}</td> <td>{{ $row->pns_p }}</td> <td class="font-bold bg-blue">{{ $pnsT }}</td>
+                    <td>{{ $row->pppk_l }}</td> <td>{{ $row->pppk_p }}</td> <td class="font-bold bg-green">{{ $pppkT }}</td>
+                    <td>{{ $row->pppk_pw_l }}</td> <td>{{ $row->pppk_pw_p }}</td> <td class="font-bold bg-purple">{{ $pppkPwT }}</td>
+                    <td class="font-bold bg-gray">{{ $pnsT + $pppkT + $pppkPwT }}</td>
                 </tr>
             @endforeach
         </tbody>
-        <tfoot class="bg-total">
-            <tr class="font-bold">
-                <td class="text-left">TOTAL</td>
-
-                <td>{{ number_format($totals['pns_l']) }}</td>
-                <td>{{ number_format($totals['pns_p']) }}</td>
-                <td>{{ number_format($totals['pns_total']) }}</td>
-
-                <td>{{ number_format($totals['pppk_l']) }}</td>
-                <td>{{ number_format($totals['pppk_p']) }}</td>
-                <td>{{ number_format($totals['pppk_total']) }}</td>
-
-                <td>{{ number_format($totals['pppk_pw_l']) }}</td>
-                <td>{{ number_format($totals['pppk_pw_p']) }}</td>
-                <td>{{ number_format($totals['pppk_pw_total']) }}</td>
-
-                <td>{{ number_format($totals['total']) }}</td>
+        <tfoot class="font-bold">
+            <tr class="bg-gray">
+                <td class="text-left">TOTAL KESELURUHAN</td>
+                <td>{{ $sortedData->sum('pns_l') }}</td>
+                <td>{{ $sortedData->sum('pns_p') }}</td>
+                <td class="bg-blue">{{ $sortedData->sum('pns_l') + $sortedData->sum('pns_p') }}</td>
+                <td>{{ $sortedData->sum('pppk_l') }}</td>
+                <td>{{ $sortedData->sum('pppk_p') }}</td>
+                <td class="bg-green">{{ $sortedData->sum('pppk_l') + $sortedData->sum('pppk_p') }}</td>
+                <td>{{ $sortedData->sum('pppk_pw_l') }}</td>
+                <td>{{ $sortedData->sum('pppk_pw_p') }}</td>
+                <td class="bg-purple">{{ $sortedData->sum('pppk_pw_l') + $sortedData->sum('pppk_pw_p') }}</td>
+                <td>{{ $sortedData->sum('pns_l') + $sortedData->sum('pns_p') + $sortedData->sum('pppk_l') + $sortedData->sum('pppk_p') + $sortedData->sum('pppk_pw_l') + $sortedData->sum('pppk_pw_p') }}</td>
             </tr>
         </tfoot>
     </table>

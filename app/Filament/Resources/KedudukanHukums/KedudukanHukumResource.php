@@ -26,7 +26,7 @@ class KedudukanHukumResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'kedudukan';
-    protected static UnitEnum|string|null $navigationGroup = 'Master Data';
+    protected static UnitEnum|string|null $navigationGroup = 'Tabel Refensi';
 
     public static function form(Schema $schema): Schema
     {

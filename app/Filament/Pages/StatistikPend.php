@@ -4,20 +4,19 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
-use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Response;
+use BackedEnum;
 use UnitEnum;
 
 class StatistikPend extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+    protected static string|BackedEnum|null $navigationIcon= 'heroicon-o-academic-cap';
     protected string $view = 'filament.pages.statistik-pend';
-    protected static ?string $modelLabel = 'statistik pendidikan';
     protected static ?string $navigationLabel = 'Statistik Pendidikan';
-    protected static ?string $title = 'Statistik Pegawai Berdasarkan Pendidikan';
+    protected static ?string $title = 'Statistik Pegawai per Tingkat Pendidikan';
     protected static ?int $navigationSort = 2;
-    protected static UnitEnum|string|null $navigationGroup = 'Statistik';
+    protected static string|UnitEnum|null $navigationGroup = 'Statistik';
 
     public $data = [];
 
@@ -41,27 +40,17 @@ class StatistikPend extends Page
 
     public function exportPdf()
     {
-        $totals = [
-            'pns_l' => collect($this->data)->sum('pns_l'),
-            'pns_p' => collect($this->data)->sum('pns_p'),
-            'pppk_l' => collect($this->data)->sum('pppk_l'),
-            'pppk_p' => collect($this->data)->sum('pppk_p'),
-            'pppk_pw_l' => collect($this->data)->sum('pppk_pw_l'),
-            'pppk_pw_p' => collect($this->data)->sum('pppk_pw_p'),
-        ];
-
-        $pdf = Pdf::loadView('filament.pages.exports.statistik-umum-pdf', [
-            'title' => 'STATISTIK PEGAWAI PER TINGKAT PENDIDIKAN',
-            'label' => 'Tingkat Pendidikan',
+        $pdf = Pdf::loadView('filament.pages.exports.statistik-pendidikan-pdf', [
+            'date' => now()->translatedFormat('d F Y H:i'),
             'data' => $this->data,
-            'totals' => $totals,
-            'date' => now()->format('d/m/Y H:i')
         ]);
 
-        $pdf->setPaper('folio', 'landscape');
+        // Custom Paper Size untuk F4 dalam satuan Point (1 inci = 72 pt)
+        // F4 = 8.5 inci x 13 inci => 612pt x 936pt
+        $pdf->setPaper([0, 0, 612, 936], 'portrait');
 
         return Response::streamDownload(function() use ($pdf) {
             echo $pdf->output();
-        }, 'statistik-pendidikan-' . now()->format('Y-m-d') . '.pdf');
+        }, 'statistik-pendidikan-' . date('Ymd') . '.pdf');
     }
 }

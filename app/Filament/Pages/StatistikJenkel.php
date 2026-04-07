@@ -9,16 +9,15 @@ use Illuminate\Support\Facades\Response;
 use BackedEnum;
 use UnitEnum;
 
-class StatistikJenisKelamin extends Page
+class StatistikJenkel extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
-    protected string $view = 'filament.pages.statistik-jenis-kelamin';
+    protected string $view = 'filament.pages.statistik-jenkel';
     protected static ?string $modelLabel = 'statistik jenis kelamin';
     protected static ?string $navigationLabel = 'Statistik Jenis Kelamin';
     protected static ?string $title = 'Statistik Pegawai per Jenis Kelamin';
     protected static ?int $navigationSort = 5;
     protected static string|UnitEnum|null $navigationGroup = 'Statistik';
-
     public $data = [];
 
     public function mount()
@@ -42,33 +41,23 @@ class StatistikJenisKelamin extends Page
 
     public function exportPdf()
     {
-        // Format data agar sesuai dengan template umum yang sudah kita buat sebelumnya
-        // Kita manipulasi sedikit agar pns_l diisi total pns, dst agar template PDF bisa membaca
-        $formattedData = collect($this->data)->map(function($item) {
-            return (object)[
-                'label_custom' => $item->gender,
-                'pns_l' => $item->pns, 'pns_p' => 0, // Kita pakai kolom L saja untuk total per baris gender
-                'pppk_l' => $item->pppk, 'pppk_p' => 0,
-                'pppk_pw_l' => $item->pppk_pw, 'pppk_pw_p' => 0,
-            ];
-        });
+        // Menggunakan timezone Jakarta agar jam tidak selisih 7 jam
+        $this->date = now()->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i');
 
-        $totals = [
-            'pns_l' => $formattedData->sum('pns_l'), 'pns_p' => 0,
-            'pppk_l' => $formattedData->sum('pppk_l'), 'pppk_p' => 0,
-            'pppk_pw_l' => $formattedData->sum('pppk_pw_l'), 'pppk_pw_p' => 0,
+        $payload = [
+            'date' => $this->date,
+            'data' => $this->data,
         ];
 
-        $pdf = Pdf::loadView('filament.pages.exports.statistik-umum-pdf', [
-            'title' => 'STATISTIK PEGAWAI PER JENIS KELAMIN',
-            'label' => 'Jenis Kelamin',
-            'data' => $formattedData,
-            'totals' => $totals,
-            'date' => now()->format('d/m/Y H:i')
-        ]);
+        // Ganti nama view sesuai filenya (statistik-agama-pdf atau statistik-gender-pdf)
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('filament.pages.exports.statistik-gender-pdf', $payload);
 
-        return Response::streamDownload(function() use ($pdf) {
+        // Set ukuran F4 Portrait
+        $pdf->setPaper([0, 0, 612, 936], 'portrait');
+
+        return response()->streamDownload(function() use ($pdf) {
             echo $pdf->output();
-        }, 'statistik-gender-' . now()->format('Y-m-d') . '.pdf');
+        }, 'statistik-laporan-' . date('YmdHis') . '.pdf');
     }
+
 }

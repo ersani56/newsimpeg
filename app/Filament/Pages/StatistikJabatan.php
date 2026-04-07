@@ -5,8 +5,6 @@ namespace App\Filament\Pages;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use BackedEnum;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Response;
 use UnitEnum;
 
 class StatistikJabatan extends Page
@@ -20,51 +18,6 @@ class StatistikJabatan extends Page
     protected static string|UnitEnum|null $navigationGroup = 'Statistik';
 
     public $data = [];
-
-    /* public function mount()
-    {
-        // Sesuaikan 'jenis_jabatan_nama' dengan kolom di database Anda
-        $this->data = DB::table('staging_import')
-            ->selectRaw("
-                COALESCE(jenis_jabatan_nama, 'Tanpa Jabatan') as jabatan,
-                SUM(CASE WHEN kedudukan_hukum_id IN ('01', '02', '03', '13', '15', '04') AND LOWER(jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pns_l,
-                SUM(CASE WHEN kedudukan_hukum_id IN ('01', '02', '03', '13', '15', '04') AND LOWER(jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pns_p,
-                SUM(CASE WHEN kedudukan_hukum_id = '71' AND LOWER(jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pppk_l,
-                SUM(CASE WHEN kedudukan_hukum_id = '71' AND LOWER(jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pppk_p,
-                SUM(CASE WHEN kedudukan_hukum_id = '101' AND LOWER(jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pppk_pw_l,
-                SUM(CASE WHEN kedudukan_hukum_id = '101' AND LOWER(jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pppk_pw_p
-            ")
-            ->groupBy('jenis_jabatan_nama')
-            ->orderBy('jenis_jabatan_nama', 'asc')
-            ->get()
-            ->toArray();
-    }
-
-    public function exportPdf()
-    {
-        $totals = [
-            'pns_l' => collect($this->data)->sum('pns_l'),
-            'pns_p' => collect($this->data)->sum('pns_p'),
-            'pppk_l' => collect($this->data)->sum('pppk_l'),
-            'pppk_p' => collect($this->data)->sum('pppk_p'),
-            'pppk_pw_l' => collect($this->data)->sum('pppk_pw_l'),
-            'pppk_pw_p' => collect($this->data)->sum('pppk_pw_p'),
-        ];
-
-        $pdf = Pdf::loadView('filament.pages.exports.statistik-umum-pdf', [
-            'title' => 'STATISTIK PEGAWAI PER JENIS JABATAN',
-            'label' => 'Jenis Jabatan',
-            'data' => $this->data,
-            'totals' => $totals,
-            'date' => now()->format('d/m/Y H:i')
-        ]);
-
-        $pdf->setPaper('folio', 'landscape');
-
-        return Response::streamDownload(function() use ($pdf) {
-            echo $pdf->output();
-        }, 'statistik-jabatan-' . now()->format('Y-m-d') . '.pdf');
-    } */
 
         public function mount()
         {
@@ -142,5 +95,21 @@ class StatistikJabatan extends Page
                 ")
                 ->get()
                 ->toArray();
+        }
+        public function exportPdf()
+        {
+            $payload = [
+                'date' => now()->translatedFormat('d F Y H:i'),
+                'data' => $this->data,
+            ];
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('filament.pages.exports.statistik-jabatan-pdf', $payload);
+
+            // Set kertas F4 (8.5 x 13 inci)
+            $pdf->setPaper([0, 0, 612, 936], 'portrait');
+
+            return response()->streamDownload(function() use ($pdf) {
+                echo $pdf->output();
+            }, 'statistik-jabatan-' . date('YmdHis') . '.pdf');
         }
 }

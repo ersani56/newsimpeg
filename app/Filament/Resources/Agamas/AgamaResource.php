@@ -27,7 +27,7 @@ class AgamaResource extends Resource
     protected static ?string $recordTitleAttribute = 'agama';
     protected static ?string $modelLabel = 'Agama';
     protected static ?string $pluralModelLabel = 'Agama';
-    protected static UnitEnum|string|null $navigationGroup = 'Master Data';
+    protected static UnitEnum|string|null $navigationGroup = 'Tabel Refensi';
 
     public static function form(Schema $schema): Schema
     {

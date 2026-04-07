@@ -58,7 +58,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('Master Data')
+                    ->label('Statistik')
+                    ->collapsed(), // Ini yang membuatnya tertutup secara default
+                NavigationGroup::make()
+                    ->label('Tabel Refensi')
                     ->collapsed(),
             ]);
     }

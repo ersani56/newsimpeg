@@ -42,27 +42,22 @@ class StatistikAgama extends Page
 
     public function exportPdf()
     {
-        $totals = [
-            'pns_l' => collect($this->data)->sum('pns_l'),
-            'pns_p' => collect($this->data)->sum('pns_p'),
-            'pppk_l' => collect($this->data)->sum('pppk_l'),
-            'pppk_p' => collect($this->data)->sum('pppk_p'),
-            'pppk_pw_l' => collect($this->data)->sum('pppk_pw_l'),
-            'pppk_pw_p' => collect($this->data)->sum('pppk_pw_p'),
+        // Menggunakan timezone Jakarta agar jam tidak selisih 7 jam
+        $this->date = now()->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i');
+
+        $payload = [
+            'date' => $this->date,
+            'data' => $this->data,
         ];
 
-        $pdf = Pdf::loadView('filament.pages.exports.statistik-umum-pdf', [
-            'title' => 'STATISTIK PEGAWAI PER AGAMA',
-            'label' => 'Agama',
-            'data' => $this->data,
-            'totals' => $totals,
-            'date' => now()->format('d/m/Y H:i')
-        ]);
+        // Ganti nama view sesuai filenya (statistik-agama-pdf atau statistik-gender-pdf)
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('filament.pages.exports.statistik-agama-pdf', $payload);
 
-        $pdf->setPaper('folio', 'portrait'); // Agama biasanya tidak banyak baris, portrait cukup
+        // Set ukuran F4 Portrait
+        $pdf->setPaper([0, 0, 612, 936], 'portrait');
 
-        return Response::streamDownload(function() use ($pdf) {
+        return response()->streamDownload(function() use ($pdf) {
             echo $pdf->output();
-        }, 'statistik-agama-' . now()->format('Y-m-d') . '.pdf');
+        }, 'statistik-laporan-' . date('YmdHis') . '.pdf');
     }
 }

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Statistik Pegawai Berdasarkan Usia</title>
+    <title>Statistik Pegawai per Agama</title>
     <style>
         body {
             font-family: 'Arial', 'Helvetica', sans-serif;
@@ -135,11 +135,8 @@
     </style>
 </head>
 <body>
-    <h2>STATISTIK PEGAWAI BERDASARKAN USIA</h2>
-    <div class="subtitle">
-        Pemerintah Kabupaten Tulang Bawang Barat
-    </div>
-
+    <h2>STATISTIK PEGAWAI BERDASARKAN AGAMA</h2>
+    <div class="subtitle">Pemerintah Kabupaten Tulang Bawang Barat</div>
     <div class="header-info">
         <div><strong>Tanggal Cetak:</strong> {{ $date }}</div>
     </div>
@@ -147,62 +144,57 @@
     <table>
         <thead>
             <tr>
-                <th rowspan="2" class="text-left" width="12%">Kelompok Usia</th>
+                <th rowspan="2" width="20%">AGAMA</th>
                 <th colspan="3">PNS</th>
                 <th colspan="3">PPPK</th>
-                <th colspan="3">PPPK Paruh Waktu</th>
-                <th rowspan="2" width="10%">Total</th>
+                <th colspan="3">PPPK PW</th>
+                <th rowspan="2" width="10%">TOTAL</th>
             </tr>
             <tr>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
-                <th width="6%">L</th>
-                <th width="6%">P</th>
-                <th width="6%">Total</th>
+                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-blue">T</th>
+                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-green">T</th>
+                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-purple">T</th>
             </tr>
         </thead>
         <tbody>
             @foreach($data as $row)
+                @php
+                    $pnsT = ($row->pns_l ?? 0) + ($row->pns_p ?? 0);
+                    $pppkT = ($row->pppk_l ?? 0) + ($row->pppk_p ?? 0);
+                    $pppkPwT = ($row->pppk_pw_l ?? 0) + ($row->pppk_pw_p ?? 0);
+                    $rowTotal = $pnsT + $pppkT + $pppkPwT;
+                @endphp
                 <tr>
-                    <td class="text-left font-bold">{{ $row->range }} tahun</td>
-
-                    <td>{{ number_format($row->pns_l) }}</td>
-                    <td>{{ number_format($row->pns_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pns_total) }}</td>
-
-                    <td>{{ number_format($row->pppk_l) }}</td>
-                    <td>{{ number_format($row->pppk_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pppk_total) }}</td>
-
-                    <td>{{ number_format($row->pppk_pw_l) }}</td>
-                    <td>{{ number_format($row->pppk_pw_p) }}</td>
-                    <td class="font-bold">{{ number_format($row->pppk_pw_total) }}</td>
-
-                    <td class="font-bold bg-total">{{ number_format($row->total) }}</td>
+                    <td class="text-left font-bold">{{ strtoupper($row->agama ?? 'TIDAK TERISI') }}</td>
+                    <td>{{ number_format($row->pns_l) }}</td> <td>{{ number_format($row->pns_p) }}</td> <td class="bg-blue font-bold">{{ number_format($pnsT) }}</td>
+                    <td>{{ number_format($row->pppk_l) }}</td> <td>{{ number_format($row->pppk_p) }}</td> <td class="bg-green font-bold">{{ number_format($pppkT) }}</td>
+                    <td>{{ number_format($row->pppk_pw_l) }}</td> <td>{{ number_format($row->pppk_pw_p) }}</td> <td class="bg-purple font-bold">{{ number_format($pppkPwT) }}</td>
+                    <td class="bg-gray font-bold">{{ number_format($rowTotal) }}</td>
                 </tr>
             @endforeach
         </tbody>
-        <tfoot class="bg-total">
-            <tr class="font-bold">
-                <td class="text-left">TOTAL</td>
+        <tfoot>
+            <tr class="font-bold bg-gray">
+                <td class="text-left">TOTAL KESELURUHAN</td>
+                <td>{{ number_format(collect($data)->sum('pns_l')) }}</td>
+                <td>{{ number_format(collect($data)->sum('pns_p')) }}</td>
+                <td class="bg-blue">{{ number_format(collect($data)->sum('pns_l') + collect($data)->sum('pns_p')) }}</td>
 
-                <td>{{ number_format($totals['pns_l']) }}</td>
-                <td>{{ number_format($totals['pns_p']) }}</td>
-                <td>{{ number_format($totals['pns_total']) }}</td>
+                <td>{{ number_format(collect($data)->sum('pppk_l')) }}</td>
+                <td>{{ number_format(collect($data)->sum('pppk_p')) }}</td>
+                <td class="bg-green">{{ number_format(collect($data)->sum('pppk_l') + collect($data)->sum('pppk_p')) }}</td>
 
-                <td>{{ number_format($totals['pppk_l']) }}</td>
-                <td>{{ number_format($totals['pppk_p']) }}</td>
-                <td>{{ number_format($totals['pppk_total']) }}</td>
+                <td>{{ number_format(collect($data)->sum('pppk_pw_l')) }}</td>
+                <td>{{ number_format(collect($data)->sum('pppk_pw_p')) }}</td>
+                <td class="bg-purple">{{ number_format(collect($data)->sum('pppk_pw_l') + collect($data)->sum('pppk_pw_p')) }}</td>
 
-                <td>{{ number_format($totals['pppk_pw_l']) }}</td>
-                <td>{{ number_format($totals['pppk_pw_p']) }}</td>
-                <td>{{ number_format($totals['pppk_pw_total']) }}</td>
-
-                <td>{{ number_format($totals['total']) }}</td>
+                <td>
+                    {{ number_format(
+                        collect($data)->sum('pns_l') + collect($data)->sum('pns_p') +
+                        collect($data)->sum('pppk_l') + collect($data)->sum('pppk_p') +
+                        collect($data)->sum('pppk_pw_l') + collect($data)->sum('pppk_pw_p')
+                    ) }}
+                </td>
             </tr>
         </tfoot>
     </table>

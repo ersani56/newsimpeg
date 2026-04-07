@@ -26,7 +26,7 @@ class JabatanResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'jabatan';
-    protected static UnitEnum|string|null $navigationGroup = 'Master Data';
+    protected static UnitEnum|string|null $navigationGroup = 'Tabel Refensi';
         protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

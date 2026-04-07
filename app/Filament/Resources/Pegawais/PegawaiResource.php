@@ -34,8 +34,6 @@ class PegawaiResource extends Resource
     protected static ?string $recordTitleAttribute = 'Pegawai';
     protected static ?string $modelLabel = 'Pegawai';
     protected static ?string $pluralModelLabel = 'Data Pegawai';
-    protected static UnitEnum|string|null $navigationGroup = 'Views';
-
     public static function form(Schema $schema): Schema
     {
         return $schema
