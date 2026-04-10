@@ -10,7 +10,7 @@ class DashboardPimpinan extends StatsOverviewWidget
 {
     protected function getStats(): array
     {
-        $total = DB::table('pegawais')
+        $total = DB::table('staging_import')
             ->where('kedudukan_hukum_id', '01')
             ->orWhere('kedudukan_hukum_id', '02')
             ->orWhere('kedudukan_hukum_id', '03')
@@ -20,48 +20,28 @@ class DashboardPimpinan extends StatsOverviewWidget
             ->orWhere('kedudukan_hukum_id', '71')
             ->orWhere('kedudukan_hukum_id', '101')
             ->count();
-        $totalpns = DB::table('pegawais')
+        $totalpns = DB::table('staging_import')
             ->where('kedudukan_hukum_id', '01')
             ->count();
-        $totalpppk = DB::table('pegawais')
+        $totalpppk = DB::table('staging_import')
             ->where('kedudukan_hukum_id', '71')
             ->count();
-        $totalpppkpw = DB::table('pegawais')
+        $totalpppkpw = DB::table('staging_import')
             ->where('kedudukan_hukum_id', '101')
             ->count();
-        $cltn = DB::table('pegawais')
+        $cltn = DB::table('staging_import')
             ->where('kedudukan_hukum_id', '02')
             ->orWhere('kedudukan_hukum_id', '13')
             ->count();
-        $tubel = DB::table('pegawais')
+        $tubel = DB::table('staging_import')
             ->where('kedudukan_hukum_id', '03')
             ->count();
-        $hukdis = DB::table('pegawais')
+        $hukdis = DB::table('staging_import')
             ->where('kedudukan_hukum_id', '15')
             ->count();
-        $pemberhentiansementara = DB::table('pegawais')
+        $pemberhentiansementara = DB::table('staging_import')
             ->where('kedudukan_hukum_id', '04')
             ->count();
-/*
-        $laki = DB::table('pegawais')
-            ->where('jenis_kelamin', 'M')
-            ->where('kedudukan_hukum_id', '01')
-            ->orWhere('kedudukan_hukum_id', '71')
-            ->orWhere('kedudukan_hukum_id', '101')
-            ->count();
-        $perempuan = DB::table('pegawais')
-            ->where('jenis_kelamin', 'F   ')
-            ->where('kedudukan_hukum_id', '01')
-            ->orWhere('kedudukan_hukum_id', '71')
-            ->orWhere('kedudukan_hukum_id', '101')
-            ->count();
-
-        $usia60 = DB::table('pegawais')
-            ->whereRaw("tanggal_lahir <= DATE_SUB(CURDATE(), INTERVAL 60 YEAR)")
-            ->where('kedudukan_hukum_id', '01')
-            ->orWhere('kedudukan_hukum_id', '71')
-            ->orWhere('kedudukan_hukum_id', '101')
-            ->count(); */
 
         return [
             Stat::make('Total Pegawai (ASN)', $total),
@@ -72,10 +52,6 @@ class DashboardPimpinan extends StatsOverviewWidget
             Stat::make('Tugas Belajar', $tubel),
             Stat::make('Hukuman Disiplin', $hukdis),
             Stat::make('Pemberhentian Sementara', $pemberhentiansementara),
-
-/*             Stat::make('Laki-laki', $laki),
-            Stat::make('Perempuan', $perempuan),
-            Stat::make('Usia ≥ 60', $usia60), */
         ];
     }
 }

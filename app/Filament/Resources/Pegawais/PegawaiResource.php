@@ -176,9 +176,8 @@ class PegawaiResource extends Resource
                     );
                 }),
             TextColumn::make('kedudukanHukum.nama')
-                ->label('Jenis Pegawai')
-                ->sortable()
-                ->searchable(),
+                ->label('KEDUDUKAN HUKUM')
+                ->sortable(),
             TextColumn::make('nik')
                 ->label('NIK')
                 ->searchable()
@@ -189,8 +188,7 @@ class PegawaiResource extends Resource
                 ->sortable(),
             TextColumn::make('pendidikan.nama')
                 ->label('PENDIDIKAN')
-                ->searchable()
-                ->sortable(),
+                ->searchable(),
             TextColumn::make('riwayatJabatan.jabatan.jabatan_nama')
                 ->label('JABATAN')
                 ->searchable()

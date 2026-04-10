@@ -31,23 +31,31 @@ class StatistikJabatan extends Page
                         WHEN LOWER(jabatan_nama) LIKE 'kepala dinas%' OR
                             LOWER(jabatan_nama) LIKE 'kepala badan%' OR
                             LOWER(jabatan_nama) LIKE 'inspektur%' OR
-                            LOWER(jabatan_nama) LIKE 'asisten pemerintah%' OR
+                            LOWER(jabatan_nama) LIKE 'asisten pemerintahan%' OR
                             LOWER(jabatan_nama) LIKE 'asisten bidang%' OR
                             LOWER(jabatan_nama) LIKE 'asisten perekonomian%' OR
+                            LOWER(jabatan_nama) LIKE 'kepala satuan%' OR
                             LOWER(jabatan_nama) LIKE 'staf ahli%' OR
                             LOWER(jabatan_nama) = 'sekretaris dprd' THEN 'Eselon II/b'
 
                         -- 3. Eselon III/a --
-                        WHEN LOWER(jabatan_nama) LIKE 'sekretaris dinas%' OR
+                        WHEN (
+                            LOWER(jabatan_nama) LIKE 'sekretaris dinas%' OR
                             LOWER(jabatan_nama) LIKE 'sekretaris badan%' OR
                             LOWER(jabatan_nama) LIKE 'sekretaris inspektorat%' OR
                             LOWER(jabatan_nama) LIKE 'camat%' OR
                             LOWER(jabatan_nama) LIKE 'kepala bagian%' OR
-                            LOWER(jabatan_nama) LIKE 'inspektur pembantu%' THEN 'Eselon III/a'
+                            (
+                                LOWER(jabatan_nama) = 'sekretaris' AND
+                                LOWER(unor_nama) NOT LIKE '%kecamatan%' AND
+                                LOWER(unor_nama) NOT LIKE '%kelurahan%'
+                            )
+                        ) THEN 'Eselon III/a'
 
                         -- 4. Eselon III/b --
                         WHEN LOWER(jabatan_nama) LIKE 'kepala bidang%' OR
-                            LOWER(jabatan_nama) LIKE 'sekretaris camat%' THEN 'Eselon III/b'
+                            LOWER(jabatan_nama) LIKE 'sekretaris kecamatan%' OR
+                            LOWER(jabatan_nama) LIKE 'direktur rumah sakit%' THEN 'Eselon III/b'
 
                         -- 5. Eselon IV/a & IV/b --
                         WHEN (LOWER(jabatan_nama) REGEXP 'lurah|kepala seksi|kepala sub bidang|kasi|kasubid|kasubbid|kasubbag|kepala sub bagian|kasubag') THEN
@@ -62,7 +70,12 @@ class StatistikJabatan extends Page
                         WHEN LOWER(jabatan_nama) LIKE '%guru%' THEN 'Fungsional Guru'
 
                         -- 7. Tenaga Kesehatan (Fungsional) --
-                        WHEN LOWER(jabatan_nama) REGEXP 'dokter|perawat|bidan|apoteker|nutrisionis|sanitarian|asisten apoteker' THEN 'Fungsional Kesehatan'
+                        WHEN LOWER(jabatan_nama) REGEXP 'dokter|perawat|bidan|gigi|
+                        apoteker|anestesi|pranata laboratorium|
+                        radiografer|perekam medis|teknisi elektromedis|Refraksionis Optisien|fisikawan medik|
+                        ortotis prostetis|epidemiolog kesehatan|sanitasi|sanitarian|tenaga promosi kesehatan|
+                        pembimbing kesehatan kerja|administrator kesehatan|entomolog Kesehatan|fisioterapis|
+                        terapis|psikolog klinis' THEN 'Fungsional Kesehatan'
 
                         -- 8. Fungsional Lainnya (Fungsional diluar Guru & Nakes) --
                         -- Mengasumsikan ada kolom jenis_jabatan_nama untuk cek tipe 'Fungsional' --

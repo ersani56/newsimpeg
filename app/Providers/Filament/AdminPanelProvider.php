@@ -63,6 +63,10 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Tabel Refensi')
                     ->collapsed(),
+                NavigationGroup::make()
+                    ->label('Daftar Pejabat')
+                    ->collapsed(),
+
             ]);
     }
 }
