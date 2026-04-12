@@ -19,96 +19,88 @@ class StatistikJabatan extends Page
 
     public $data = [];
 
-        public function mount()
-        {
-            $this->data = DB::table('staging_import')
-                ->selectRaw("
-                    CASE
-                        -- 1. Eselon II/a --
-                        WHEN LOWER(jabatan_nama) = 'sekretaris daerah' THEN 'Eselon II/a'
+    public function mount()
+    {
+        $this->data = DB::table('pegawais as p')
 
-                        -- 2. Eselon II/b --
-                        WHEN LOWER(jabatan_nama) LIKE 'kepala dinas%' OR
-                            LOWER(jabatan_nama) LIKE 'kepala badan%' OR
-                            LOWER(jabatan_nama) LIKE 'inspektur%' OR
-                            LOWER(jabatan_nama) LIKE 'asisten pemerintahan%' OR
-                            LOWER(jabatan_nama) LIKE 'asisten bidang%' OR
-                            LOWER(jabatan_nama) LIKE 'asisten perekonomian%' OR
-                            LOWER(jabatan_nama) LIKE 'kepala satuan%' OR
-                            LOWER(jabatan_nama) LIKE 'staf ahli%' OR
-                            LOWER(jabatan_nama) = 'sekretaris dprd' THEN 'Eselon II/b'
+            ->join(DB::raw("
+                (
+                    SELECT pegawai_id, MAX(tmt_jabatan) as max_tmt
+                    FROM r_jabatans
+                    GROUP BY pegawai_id
+                ) as latest
+            "), 'latest.pegawai_id', '=', 'p.id')
 
-                        -- 3. Eselon III/a --
-                        WHEN (
-                            LOWER(jabatan_nama) LIKE 'sekretaris dinas%' OR
-                            LOWER(jabatan_nama) LIKE 'sekretaris badan%' OR
-                            LOWER(jabatan_nama) LIKE 'sekretaris inspektorat%' OR
-                            LOWER(jabatan_nama) LIKE 'camat%' OR
-                            LOWER(jabatan_nama) LIKE 'kepala bagian%' OR
-                            (
-                                LOWER(jabatan_nama) = 'sekretaris' AND
-                                LOWER(unor_nama) NOT LIKE '%kecamatan%' AND
-                                LOWER(unor_nama) NOT LIKE '%kelurahan%'
-                            )
-                        ) THEN 'Eselon III/a'
+            ->join('r_jabatans as r', function ($join) {
+                $join->on('r.pegawai_id', '=', 'latest.pegawai_id')
+                    ->on('r.tmt_jabatan', '=', 'latest.max_tmt');
+            })
 
-                        -- 4. Eselon III/b --
-                        WHEN LOWER(jabatan_nama) LIKE 'kepala bidang%' OR
-                            LOWER(jabatan_nama) LIKE 'sekretaris kecamatan%' OR
-                            LOWER(jabatan_nama) LIKE 'direktur rumah sakit%' THEN 'Eselon III/b'
+            ->join('jabatans as j', 'r.jabatan_id', '=', 'j.id')
+            ->leftJoin('jenis_jabatans as jj', 'j.jenis_jabatan_id', '=', 'jj.id')
 
-                        -- 5. Eselon IV/a & IV/b --
-                        WHEN (LOWER(jabatan_nama) REGEXP 'lurah|kepala seksi|kepala sub bidang|kasi|kasubid|kasubbid|kasubbag|kepala sub bagian|kasubag') THEN
-                            CASE
-                                WHEN LOWER(SUBSTRING_INDEX(unor_nama, '-', -1)) LIKE '%kecamatan%' OR
-                                    LOWER(SUBSTRING_INDEX(unor_nama, '-', -1)) LIKE '%kelurahan%'
-                                THEN 'Eselon IV/b'
-                                ELSE 'Eselon IV/a'
-                            END
+            ->selectRaw("
+                CASE
+                    -- STRUKTURAL (pakai eselon langsung)
+                    WHEN jj.nama = 'struktural' AND j.eselon IS NOT NULL THEN CONCAT('Eselon ', j.eselon)
 
-                        -- 6. Tenaga Guru (Fungsional) --
-                        WHEN LOWER(jabatan_nama) LIKE '%guru%' THEN 'Fungsional Guru'
+                    -- FUNGSIONAL
+                    WHEN LOWER(j.kel_jab) = 'jf guru' THEN 'Fungsional Guru'
+                    WHEN LOWER(j.kel_jab) = 'jf kesehatan' THEN 'Fungsional Kesehatan'
+                    WHEN LOWER(j.kel_jab) = 'jf lainnya' THEN 'Fungsional Lainnya'
 
-                        -- 7. Tenaga Kesehatan (Fungsional) --
-                        WHEN LOWER(jabatan_nama) REGEXP 'dokter|perawat|bidan|gigi|
-                        apoteker|anestesi|pranata laboratorium|
-                        radiografer|perekam medis|teknisi elektromedis|Refraksionis Optisien|fisikawan medik|
-                        ortotis prostetis|epidemiolog kesehatan|sanitasi|sanitarian|tenaga promosi kesehatan|
-                        pembimbing kesehatan kerja|administrator kesehatan|entomolog Kesehatan|fisioterapis|
-                        terapis|psikolog klinis' THEN 'Fungsional Kesehatan'
+                    -- PELAKSANA
+                    WHEN jj.nama = 'pelaksana' THEN 'Pelaksana'
 
-                        -- 8. Fungsional Lainnya (Fungsional diluar Guru & Nakes) --
-                        -- Mengasumsikan ada kolom jenis_jabatan_nama untuk cek tipe 'Fungsional' --
-                        WHEN LOWER(jenis_jabatan_nama) LIKE '%fungsional%' THEN 'Fungsional Lainnya'
+                    ELSE 'Lainnya'
+                END as kelompok_jabatan,
 
-                        -- 9. Pelaksana (Bukan Fungsional) --
-                        ELSE 'Pelaksana'
-                    END as kelompok_jabatan,
-                    SUM(CASE WHEN kedudukan_hukum_id IN ('01', '02', '03', '13', '15', '04') AND LOWER(jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pns_l,
-                    SUM(CASE WHEN kedudukan_hukum_id IN ('01', '02', '03', '13', '15', '04') AND LOWER(jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pns_p,
-                    SUM(CASE WHEN kedudukan_hukum_id = '71' AND LOWER(jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pppk_l,
-                    SUM(CASE WHEN kedudukan_hukum_id = '71' AND LOWER(jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pppk_p,
-                    SUM(CASE WHEN kedudukan_hukum_id = '101' AND LOWER(jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pppk_pw_l,
-                    SUM(CASE WHEN kedudukan_hukum_id = '101' AND LOWER(jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pppk_pw_p
-                ")
-                ->groupBy('kelompok_jabatan')
-                ->orderByRaw("
-                    CASE
-                        WHEN kelompok_jabatan = 'Eselon II/a' THEN 1
-                        WHEN kelompok_jabatan = 'Eselon II/b' THEN 2
-                        WHEN kelompok_jabatan = 'Eselon III/a' THEN 3
-                        WHEN kelompok_jabatan = 'Eselon III/b' THEN 4
-                        WHEN kelompok_jabatan = 'Eselon IV/a' THEN 5
-                        WHEN kelompok_jabatan = 'Eselon IV/b' THEN 6
-                        WHEN kelompok_jabatan = 'Tenaga Guru' THEN 7
-                        WHEN kelompok_jabatan = 'Tenaga Kesehatan' THEN 8
-                        WHEN kelompok_jabatan = 'Fungsional Lainnya' THEN 9
-                        ELSE 10
-                    END ASC
-                ")
-                ->get()
-                ->toArray();
-        }
+                SUM(CASE
+                    WHEN p.kedudukan_hukum_id IN ('01','02','03','13','15','04')
+                    AND LOWER(p.jenis_kelamin) = 'l' THEN 1 ELSE 0 END) as pns_l,
+
+                SUM(CASE
+                    WHEN p.kedudukan_hukum_id IN ('01','02','03','13','15','04')
+                    AND LOWER(p.jenis_kelamin) = 'p' THEN 1 ELSE 0 END) as pns_p,
+
+                SUM(CASE
+                    WHEN p.kedudukan_hukum_id = '71'
+                    AND LOWER(p.jenis_kelamin) = 'l' THEN 1 ELSE 0 END) as pppk_l,
+
+                SUM(CASE
+                    WHEN p.kedudukan_hukum_id = '71'
+                    AND LOWER(p.jenis_kelamin) = 'p' THEN 1 ELSE 0 END) as pppk_p,
+
+                SUM(CASE
+                    WHEN p.kedudukan_hukum_id = '101'
+                    AND LOWER(p.jenis_kelamin) = 'l' THEN 1 ELSE 0 END) as pppk_pw_l,
+
+                SUM(CASE
+                    WHEN p.kedudukan_hukum_id = '101'
+                    AND LOWER(p.jenis_kelamin) = 'p' THEN 1 ELSE 0 END) as pppk_pw_p
+            ")
+
+            ->groupBy('kelompok_jabatan')
+
+            ->orderByRaw("
+                CASE
+                    WHEN kelompok_jabatan = 'Eselon II/a' THEN 1
+                    WHEN kelompok_jabatan = 'Eselon II/b' THEN 2
+                    WHEN kelompok_jabatan = 'Eselon III/a' THEN 3
+                    WHEN kelompok_jabatan = 'Eselon III/b' THEN 4
+                    WHEN kelompok_jabatan = 'Eselon IV/a' THEN 5
+                    WHEN kelompok_jabatan = 'Eselon IV/b' THEN 6
+                    WHEN kelompok_jabatan = 'Fungsional Guru' THEN 7
+                    WHEN kelompok_jabatan = 'Fungsional Kesehatan' THEN 8
+                    WHEN kelompok_jabatan = 'Fungsional Lainnya' THEN 9
+                    WHEN kelompok_jabatan = 'Pelaksana' THEN 10
+                    ELSE 11
+                END
+            ")
+
+            ->get()
+            ->toArray();
+    }
         public function exportPdf()
         {
             $payload = [
