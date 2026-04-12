@@ -63,7 +63,7 @@ class Pegawai extends Model
 
     public function riwayatJabatan()
     {
-        return $this->hasMany(RiwayatJabatan::class, 'pns_id', 'pns_id')
+        return $this->hasMany(RiwayatJabatan::class, 'pegawai_id', 'id')
             ->orderBy('tmt_jabatan', 'desc');
     }
 
