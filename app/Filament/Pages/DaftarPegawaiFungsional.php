@@ -70,6 +70,10 @@ class DaftarPegawaiFungsional extends Page
 
         public function exportPdf()
         {
+            // Tambahkan ini untuk mencegah timeout dan memori penuh
+            ini_set('memory_limit', '1024M');
+            set_time_limit(300);
+
             $data = [
                 'pegawai' => $this->pegawai,
                 'filter' => $this->filterKategori,
@@ -81,10 +85,30 @@ class DaftarPegawaiFungsional extends Page
                 $data
             );
 
+            // Kertas F4 (8.5 x 13 inch) sudah benar
             $pdf->setPaper([0, 0, 612, 936], 'portrait');
 
+            // Tambahkan opsi untuk DomPDF agar lebih ringan
+            $pdf->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true, // Jika ada logo lewat URL
+                'logOutputFile' => storage_path('logs/dompdf.html.log'),
+                'tempDir' => storage_path('temp/'),
+            ]);
+
             return response()->streamDownload(function () use ($pdf) {
-                echo $pdf->output();
-            }, 'Daftar_Fungsional_' . $this->filterKategori . '_' . date('YmdHis') . '.pdf');
+                // Gunakan stream() atau langsung output
+                echo $pdf->stream()->getContent();
+            }, 'Daftar_Fungsional_' . ($this->filterKategori ?? 'Semua') . '_' . date('YmdHis') . '.pdf');
         }
+
+/*         public function exportExcel()
+        {
+            $fileName = 'Daftar_Fungsional_' . ($this->filterKategori ?? 'Semua') . '_' . date('YmdHis') . '.xlsx';
+
+            return Excel::download(
+                new PegawaiFungsionalExport($this->filterKategori),
+                $fileName
+            );
+        } */
 }

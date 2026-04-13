@@ -22,6 +22,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -78,10 +79,6 @@ class PegawaiResource extends Resource
                             ->schema([
                                 Grid::make(3)
                                     ->schema([
-                                        Select::make('jenis_pegawai_id')
-                                            ->relationship('jenisPegawai','nama')
-                                            ->searchable(),
-
                                         Select::make('kedudukan_hukum_id')
                                             ->relationship('kedudukanHukum','nama')
                                             ->searchable(),
@@ -189,14 +186,11 @@ class PegawaiResource extends Resource
             TextColumn::make('pendidikan.nama')
                 ->label('PENDIDIKAN')
                 ->searchable(),
-            TextColumn::make('riwayatJabatan.jabatan.jabatan_nama')
+            TextColumn::make('riwayatJabatan.jabatan.nama')
                 ->label('JABATAN')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('unitKerja.nama')
-                ->label('UNIT ORGANISASI')
-                ->searchable()
-                ->sortable(),
+
         ])
         ->actions([
             EditAction::make(),
@@ -278,8 +272,6 @@ class PegawaiResource extends Resource
                                 'alamat' => $dataRow['alamat'] ?? null,
                                 'npwp_nomor' => $dataRow['npwp_nomor'] ?? null,
                                 'bpjs' => $dataRow['bpjs'] ?? null,
-                                'jenis_pegawai_id' => $dataRow['jenis_pegawai_id'] ?? null,
-                                'jenis_pegawai_nama' => $dataRow['jenis_pegawai_nama'] ?? null,
                                 'kedudukan_hukum_id' => $dataRow['kedudukan_hukum_id'] ?? null,
                                 'kedudukan_hukum_nama' => $dataRow['kedudukan_hukum_nama'] ?? null,
                                 'status_cpns_pns' => $dataRow['status_cpns_pns'] ?? null,
@@ -348,156 +340,118 @@ class PegawaiResource extends Resource
                 }),
 
             Action::make('sinkronPegawai')
-                ->label('Sinkron Pegawai')
-                ->icon('heroicon-o-arrow-path')
-                ->color('warning')
-                ->requiresConfirmation()
-                ->action(fn() => DB::table('pegawais')->truncate())
-                ->action(function () {
-                    DB::statement("
+            ->label('Sinkron Pegawai')
+            ->action(function () {
+                DB::table('pegawais')->truncate();
+
+                DB::statement("
                     INSERT INTO pegawais (
-                    pns_id,
-                    nip_baru,
-                    nip_lama,
-                    nik,
-                    nama,
-                    gelar_depan,
-                    gelar_belakang,
-                    tempat_lahir_id,
-                    tanggal_lahir,
-                    jenis_kelamin,
-                    agama_id,
-                    jenis_kawin_id,
-                    pendidikan_id,
-                    unor_id,
-                    nomor_hp,
-                    email,
-                    email_gov,
-                    alamat,
-                    npwp_nomor,
-                    bpjs,
-                    jenis_pegawai_id,
-                    kedudukan_hukum_id,
-                    kartu_asn_virtual,
-                    is_valid_nik,
-                    created_at,
-                    updated_at
-                )
-                SELECT
-                    s.pns_id,
-                    s.nip_baru,
-                    s.nip_lama,
-                    s.nik,
-                    s.nama,
-                    s.gelar_depan,
-                    s.gelar_belakang,
-                    s.tempat_lahir_id,
-                    STR_TO_DATE(NULLIF(s.tanggal_lahir,''), '%d-%m-%Y'),
-                    s.jenis_kelamin,
-                    s.agama_id,
-                    s.jenis_kawin_id,
-                    s.pendidikan_id,
-                    s.unor_id,
-                    s.nomor_hp,
-                    s.email,
-                    s.email_gov,
-                    s.alamat,
-                    s.npwp_nomor,
-                    s.bpjs,
-                    s.jenis_pegawai_id,
-                    s.kedudukan_hukum_id,
-                    s.kartu_asn_virtual,
-                    1,
-                    NOW(),
-                    NOW()
-                FROM staging_import s
-
-                ON DUPLICATE KEY UPDATE
-                    nama = VALUES(nama),
-                    gelar_depan = VALUES(gelar_depan),
-                    gelar_belakang = VALUES(gelar_belakang),
-                    tanggal_lahir = VALUES(tanggal_lahir),
-                    jenis_kelamin = VALUES(jenis_kelamin),
-                    agama_id = VALUES(agama_id),
-                    jenis_kawin_id = VALUES(jenis_kawin_id),
-                    pendidikan_id = VALUES(pendidikan_id),
-                    unor_id = VALUES(unor_id),
-                    nomor_hp = VALUES(nomor_hp),
-                    email = VALUES(email),
-                    jenis_pegawai_id = VALUES(jenis_pegawai_id),
-                    kedudukan_hukum_id = VALUES(kedudukan_hukum_id),
-                    updated_at = NOW();
-                    ");
-
-                    Notification::make()
-                        ->title('Sinkron berhasil')
-                        ->success()
-                        ->send();
-                }),
+                        pns_id,
+                        nip_baru,
+                        nip_lama,
+                        nama,
+                        gelar_depan,
+                        gelar_belakang,
+                        tempat_lahir_id,
+                        tanggal_lahir,
+                        jenis_kelamin,
+                        agama_id,
+                        jenis_kawin_id,
+                        nik,
+                        nomor_hp,
+                        email,
+                        email_gov,
+                        alamat,
+                        npwp_nomor,
+                        bpjs,
+                        golongan_id,
+                        jenis_pegawai_id, -- Pastikan kolom snapshot ini sudah ada di migration tadi
+                        kedudukan_hukum_id,
+                        status_cpns_pns,
+                        kartu_asn_virtual,
+                        nomor_sk_cpns,
+                        tanggal_sk_cpns,
+                        tmt_cpns,
+                        nomor_sk_pns,
+                        tanggal_sk_pns,
+                        tmt_pns,
+                        created_at,
+                        updated_at
+                    )
+                    SELECT
+                        s.pns_id,
+                        s.nip_baru,
+                        s.nip_lama,
+                        s.nama,
+                        s.gelar_depan,
+                        s.gelar_belakang,
+                        s.tempat_lahir_id,
+                        STR_TO_DATE(NULLIF(s.tanggal_lahir, ''), '%d-%m-%Y'),
+                        s.jenis_kelamin,
+                        a.id,
+                        s.jenis_kawin_id,
+                        s.nik,
+                        s.nomor_hp,
+                        s.email,
+                        s.email_gov,
+                        s.alamat,
+                        s.npwp_nomor,
+                        s.bpjs,
+                        g.id,
+                        jp.id, -- Sekarang alias 'jp' sudah aman karena ada JOIN di bawah
+                        kh.id,
+                        s.status_cpns_pns,
+                        s.kartu_asn_virtual,
+                        s.nomor_sk_cpns,
+                        STR_TO_DATE(NULLIF(s.tanggal_sk_cpns, ''), '%d-%m-%Y'),
+                        STR_TO_DATE(NULLIF(s.tmt_cpns, ''), '%d-%m-%Y'),
+                        s.nomor_sk_pns,
+                        STR_TO_DATE(NULLIF(s.tanggal_sk_pns, ''), '%d-%m-%Y'),
+                        STR_TO_DATE(NULLIF(s.tmt_pns, ''), '%d-%m-%Y'),
+                        NOW(),
+                        NOW()
+                    FROM staging_import s
+                    LEFT JOIN agamas a ON s.agama_id = a.id
+                    LEFT JOIN golongans g ON s.gol_akhir_id = g.id
+                    LEFT JOIN jenis_pegawais jp ON s.jenis_pegawai_id = jp.jenis_pegawai_id -- Tambahkan baris ini
+                    LEFT JOIN kedudukan_hukums kh ON s.kedudukan_hukum_id = kh.kedudukan_hukum_id
+                ");
+                Notification::make()->title('Data Pegawai Dasar Berhasil Disinkron')->success()->send();
+            }),
             Action::make('sinkronPangkat')
-                ->label('Sinkron Pangkat')
-                ->icon('heroicon-o-arrow-path')
-                ->color('success')
-                ->requiresConfirmation()
-                ->action(fn() => DB::table('r_pangkats')->truncate())
-                ->action(function () {
+            ->label('Sinkron Pangkat')
+            ->action(function () {
+                DB::table('r_pangkats')->truncate();
 
-                    $affected = \DB::affectingStatement("
-                        INSERT INTO r_pangkats (
-                            pns_id,
-                            golongan_id,
-                            tmt_golongan,
-                            mk_tahun,
-                            mk_bulan,
-                            created_at,
-                            updated_at
-                        )
-                        SELECT
-                            p.pns_id,
-                            s.gol_akhir_id,
+                // 1. Masukkan data ke riwayat pangkat
+                DB::statement("
+                    INSERT INTO r_pangkats (pegawai_id, golongan_id, tmt_golongan, mk_tahun, mk_bulan, created_at, updated_at)
+                    SELECT
+                        p.id, g.id,
+                        STR_TO_DATE(NULLIF(s.tmt_golongan, ''), '%d-%m-%Y'),
+                        CAST(NULLIF(s.mk_tahun, '') AS UNSIGNED),
+                        CAST(NULLIF(s.mk_bulan, '') AS UNSIGNED),
+                        NOW(), NOW()
+                    FROM staging_import s
+                    JOIN pegawais p ON s.nip_baru = p.nip_baru
+                    LEFT JOIN golongans g ON s.gol_akhir_id = g.golongan_id
+                    WHERE s.tmt_golongan IS NOT NULL AND s.tmt_golongan != ''
+                ");
 
-                            STR_TO_DATE(NULLIF(s.tmt_golongan, ''), '%d-%m-%Y'),
+                // 2. BACK-FEED: Update tabel pegawais agar r_pangkat_id mengarah ke riwayat terbaru
+                DB::statement("
+                    UPDATE pegawais p
+                    JOIN r_pangkats rp ON p.id = rp.pegawai_id
+                    SET p.r_pangkat_id = rp.id
+                    WHERE rp.id IN (
+                        SELECT max_id FROM (
+                            SELECT MAX(id) as max_id FROM r_pangkats GROUP BY pegawai_id
+                        ) as tmp
+                    )
+                ");
 
-                            CAST(NULLIF(s.mk_tahun, '') AS UNSIGNED),
-                            CAST(NULLIF(s.mk_bulan, '') AS UNSIGNED),
-
-                            NOW(),
-                            NOW()
-
-                        FROM staging_import s
-                        JOIN pegawais p ON p.nip_baru = s.nip_baru
-
-                        LEFT JOIN (
-                            SELECT r1.*
-                            FROM r_pangkats r1
-                            JOIN (
-                                SELECT pns_id, MAX(tmt_golongan) as max_tmt
-                                FROM r_pangkats
-                                GROUP BY pns_id
-                            ) r2
-                            ON r1.pns_id = r2.pns_id
-                            AND r1.tmt_golongan = r2.max_tmt
-                        ) last
-                        ON last.pns_id = p.pns_id
-
-                        WHERE
-                            s.tmt_golongan IS NOT NULL
-                            AND s.tmt_golongan != ''
-
-                            AND (
-                                last.pns_id IS NULL
-                                OR last.golongan_id != s.gol_akhir_id
-                                OR last.tmt_golongan != STR_TO_DATE(NULLIF(s.tmt_golongan, ''), '%d-%m-%Y')
-                            )
-                    ");
-
-                    \Filament\Notifications\Notification::make()
-                        ->title('Sinkron pangkat selesai')
-                        ->body("Data baru ditambahkan: {$affected}")
-                        ->success()
-                        ->send();
-                }),
-
+                Notification::make()->title('Riwayat Pangkat & Relasi Pegawai Diperbarui')->success()->send();
+            }),
                 Action::make('sinkronPendidikan')
                     ->label('Sinkron Pendidikan')
                     ->icon('heroicon-o-academic-cap')
