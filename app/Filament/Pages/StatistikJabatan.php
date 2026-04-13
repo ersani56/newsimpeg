@@ -56,28 +56,28 @@ class StatistikJabatan extends Page
                 END as kelompok_jabatan,
 
                 SUM(CASE
-                    WHEN p.kedudukan_hukum_id IN ('01','02','03','13','15','04')
-                    AND LOWER(p.jenis_kelamin) = 'l' THEN 1 ELSE 0 END) as pns_l,
+                    WHEN p.kedudukan_hukum_id IN (11,12,13,14,15,16)
+                    AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pns_l,
 
                 SUM(CASE
-                    WHEN p.kedudukan_hukum_id IN ('01','02','03','13','15','04')
-                    AND LOWER(p.jenis_kelamin) = 'p' THEN 1 ELSE 0 END) as pns_p,
+                    WHEN p.kedudukan_hukum_id IN (11,12,13,14,15,16)
+                    AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pns_p,
 
                 SUM(CASE
-                    WHEN p.kedudukan_hukum_id = '71'
-                    AND LOWER(p.jenis_kelamin) = 'l' THEN 1 ELSE 0 END) as pppk_l,
+                    WHEN p.kedudukan_hukum_id = 17
+                    AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pppk_l,
 
                 SUM(CASE
-                    WHEN p.kedudukan_hukum_id = '71'
-                    AND LOWER(p.jenis_kelamin) = 'p' THEN 1 ELSE 0 END) as pppk_p,
+                    WHEN p.kedudukan_hukum_id = 17
+                    AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pppk_p,
 
                 SUM(CASE
-                    WHEN p.kedudukan_hukum_id = '101'
-                    AND LOWER(p.jenis_kelamin) = 'l' THEN 1 ELSE 0 END) as pppk_pw_l,
+                    WHEN p.kedudukan_hukum_id = 18
+                    AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pppk_pw_l,
 
                 SUM(CASE
-                    WHEN p.kedudukan_hukum_id = '101'
-                    AND LOWER(p.jenis_kelamin) = 'p' THEN 1 ELSE 0 END) as pppk_pw_p
+                    WHEN p.kedudukan_hukum_id = 18
+                    AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pppk_pw_p
             ")
 
             ->groupBy('kelompok_jabatan')
