@@ -53,7 +53,7 @@ class RiwayatJabatan extends Model
 
     public function jabatan()
     {
-        return $this->belongsTo(Jabatan::class, 'jabatan_id', 'jabatan_id');
+        return $this->belongsTo(Jabatan::class, 'jabatan_id');
     }
 
 }

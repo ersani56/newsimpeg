@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class JenisJabatan extends Model
 {
-        protected $fillable = [
+    protected $table = 'jenis_jabatans';
+    protected $primaryKey = 'jenis_jabatan_id';
+    public $incrementing = false;
+    protected $fillable = [
+        'jenis_jabatan_id',
         'nama',
     ];
 }

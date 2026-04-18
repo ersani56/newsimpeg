@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class KedudukanHukum extends Model
 {
-        protected $fillable = [
+    protected $table = 'kedudukan_hukums';
+    protected $primaryKey = 'kedudukan_hukum_id';
+    public $incrementing = false;
+
+    protected $fillable = [
         'nama',
     ];
 }

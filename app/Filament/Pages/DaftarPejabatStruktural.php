@@ -22,31 +22,17 @@ public $filterEselon = 'semua';
     {
         $query = DB::table('pegawais as p')
 
-            ->join(DB::raw("
-                (
-                    SELECT pegawai_id, MAX(tmt_jabatan) as max_tmt
-                    FROM r_jabatans
-                    GROUP BY pegawai_id
-                ) as latest
-            "), 'latest.pegawai_id', '=', 'p.id')
-
-            ->join('r_jabatans as r', function ($join) {
-                $join->on('r.pegawai_id', '=', 'latest.pegawai_id')
-                     ->on('r.tmt_jabatan', '=', 'latest.max_tmt');
-            })
-
-            ->join('jabatans as j', 'r.jabatan_id', '=', 'j.id')
-            ->leftJoin('unors as u', 'j.unor_induk_id', '=', 'u.id')
-
+            // ambil jabatan dari snapshot
+            ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
             ->select([
                 'p.nama',
                 'p.nip_baru',
                 'j.jabatan_nama',
                 'j.eselon as eselon_display',
-                'u.nama as unor_nama',
+                'j.unor_nama',
             ])
 
-            ->where('j.kel_jab', 'Struktural');
+            ->where('j.kel_jab', 'struktural');
 
         // FILTER
         if ($this->filterEselon === 'eselon_2') {
@@ -63,25 +49,5 @@ public $filterEselon = 'semua';
             ->orderByRaw("FIELD(j.eselon, 'II/a', 'II/b', 'III/a', 'III/b', 'IV/a', 'IV/b')")
             ->orderBy('p.nama', 'asc')
             ->get();
-    }
-
-    public function exportPdf()
-    {
-        $data = [
-            'pejabat' => $this->pejabat,
-            'filter' => $this->filterEselon,
-            'date' => now()->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i')
-        ];
-
-        $pdf = Pdf::loadView(
-            'filament.pages.exports.daftar-pejabat-pdf',
-            $data
-        );
-
-        $pdf->setPaper([0, 0, 612, 936], 'portrait');
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'Daftar_Pejabat_' . $this->filterEselon . '_' . date('YmdHis') . '.pdf');
     }
 }

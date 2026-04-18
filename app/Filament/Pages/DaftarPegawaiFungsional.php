@@ -23,51 +23,44 @@ class DaftarPegawaiFungsional extends Page
         {
             return DB::table('pegawais as p')
 
-                ->join(DB::raw("
-                    (
-                        SELECT pegawai_id, MAX(tmt_jabatan) as max_tmt
-                        FROM r_jabatans
-                        GROUP BY pegawai_id
-                    ) as latest
-                "), 'latest.pegawai_id', '=', 'p.id')
-
-                ->join('r_jabatans as r', function ($join) {
-                    $join->on('r.pegawai_id', '=', 'latest.pegawai_id')
-                        ->on('r.tmt_jabatan', '=', 'latest.max_tmt');
-                })
-
-                ->join('jabatans as j', 'r.jabatan_id', '=', 'j.id')
-                ->leftJoin('jenis_jabatans as jj', 'j.jenis_jabatan_id', '=', 'jj.id')
-                ->leftJoin('unors as u', 'j.unor_induk_id', '=', 'u.id')
+                ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
 
                 ->select([
                     'p.nama',
                     'p.nip_baru',
                     'j.jabatan_nama',
-                    'u.nama as unor_nama',
+                    'j.unor_nama',
 
                     DB::raw("
-                        CASE
-                            WHEN j.kel_jab = 'jf guru' THEN 'Fungsional Guru'
-                            WHEN j.kel_jab = 'jf kesehatan' THEN 'Fungsional Kesehatan'
-                            WHEN j.kel_jab = 'jf lainnya' THEN 'Fungsional Lainnya'
-                            WHEN jj.nama = 'pelaksana' THEN 'Pelaksana'
-                            ELSE 'Lainnya'
-                        END as kelompok_jabatan
+                    CASE
+                        WHEN LOWER(TRIM(j.kel_jab)) = 'jf guru' THEN 'guru'
+                        WHEN LOWER(TRIM(j.kel_jab)) = 'jf kesehatan' THEN 'kesehatan'
+                        WHEN LOWER(TRIM(j.kel_jab)) = 'jf lainnya' THEN 'lainnya'
+                        WHEN LOWER(TRIM(j.kel_jab)) = 'pelaksana' THEN 'pelaksana'
+                        ELSE 'lainnya'
+                    END as kelompok_jabatan
                     ")
                 ])
 
+                // hilangkan struktural
                 ->where(function ($q) {
-                    $q->where('jj.nama', '!=', 'struktural')
-                    ->orWhereNull('jj.nama');
+                    $q->where('j.kel_jab', '!=', 'struktural')
+                    ->orWhereNull('j.kel_jab');
                 })
 
-                ->having('kelompok_jabatan', $this->filterKategori)
+                ->whereRaw("
+                    CASE
+                        WHEN LOWER(TRIM(j.kel_jab)) = 'jf guru' THEN 'Fungsional Guru'
+                        WHEN LOWER(TRIM(j.kel_jab)) = 'jf kesehatan' THEN 'Fungsional Kesehatan'
+                        WHEN LOWER(TRIM(j.kel_jab)) = 'jf lainnya' THEN 'Fungsional Lainnya'
+                        WHEN LOWER(TRIM(j.kel_jab)) = 'pelaksana' THEN 'Pelaksana'
+                        ELSE 'Fungsional Lainnya'
+                    END = ?
+                ", [$this->filterKategori])
 
                 ->orderBy('p.nama', 'asc')
                 ->get();
         }
-
         public function exportPdf()
         {
             // Tambahkan ini untuk mencegah timeout dan memori penuh

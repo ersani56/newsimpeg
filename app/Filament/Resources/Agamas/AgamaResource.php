@@ -46,6 +46,10 @@ public static function table(Table $table): Table
 {
     return $table
         ->columns([
+            TextColumn::make('agama_id')
+                ->label('ID')
+                ->searchable()
+                ->sortable(),
             TextColumn::make('nama')
                 ->label('Nama Agama')
                 ->searchable()

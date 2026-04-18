@@ -6,11 +6,9 @@ use App\Filament\Resources\PegawaiResource\Pages\ViewPegawai;
 use App\Filament\Resources\Pegawais\Pages\ListPegawais;
 use App\Models\Pegawai;
 use BackedEnum;
-use DB;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -22,9 +20,10 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use UnitEnum;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
 
 class PegawaiResource extends Resource
 {
@@ -157,6 +156,10 @@ class PegawaiResource extends Resource
     {
         return $table
         ->columns([
+            TextColumn::make('id')
+                ->label('ID')
+                ->searchable()
+                ->sortable(),
             TextColumn::make('nip_baru')
                 ->label('NIP')
                 ->searchable()
@@ -186,332 +189,282 @@ class PegawaiResource extends Resource
             TextColumn::make('pendidikan.nama')
                 ->label('PENDIDIKAN')
                 ->searchable(),
-            TextColumn::make('riwayatJabatan.jabatan.nama')
+            TextColumn::make('jabatan.jabatan_nama')
                 ->label('JABATAN')
                 ->searchable()
                 ->sortable(),
-
         ])
+
         ->actions([
             EditAction::make(),
         ])
         ->headerActions([
+
+            // ========================
+            // 1. CLEAR STAGING
+            // ========================
             Action::make('clearStaging')
                 ->label('Kosongkan Staging')
                 ->color('danger')
                 ->requiresConfirmation()
                 ->action(fn() => DB::table('staging_import')->truncate()),
 
-            Action::make('importCsv')
-                ->label('Import CSV SIASN')
-                ->icon('heroicon-o-arrow-up-tray')
-                ->color('gray')
-                ->form([
-                    FileUpload::make('file')
-                        ->label('Upload File CSV')
-                        ->acceptedFileTypes(['text/csv', 'text/plain'])
-                        ->disk('public')
-                        ->directory('imports')
-                        ->preserveFilenames()
-                        ->required(),
-                ])
-                ->action(function (array $data) {
-
-                    $path = storage_path('app/public/' . $data['file']);
-
-                    if (!file_exists($path)) {
-                        Notification::make()
-                            ->title('File tidak ditemukan')
-                            ->danger()
-                            ->send();
-                        return;
-                    }
-
-                    $handle = fopen($path, 'r');
-
-                    // Ambil header
-                    $header = fgetcsv($handle, 0, '|');
-                    $header = array_map(function ($h) {
-                        $h = trim($h);
-                        $h = strtolower($h);
-                        $h = str_replace(' ', '_', $h); // 🔥 ini penting
-                        return $h;
-                    }, $header);
-
-                    DB::beginTransaction();
-
-                    try {
-
-                        while (($row = fgetcsv($handle, 0, '|')) !== false) {
-
-                        if (count($row) < count($header)) {
-                            $row = array_pad($row, count($header), null);
-                        }
-
-                            $dataRow = array_combine($header, $row);
-
-                            DB::table('staging_import')->insert([
-                                'pns_id' => $dataRow['pns_id'] ?? null,
-                                'nip_baru' => $dataRow['nip_baru'] ?? null,
-                                'nip_lama' => $dataRow['nip_lama'] ?? null,
-                                'nama' => $dataRow['nama'] ?? null,
-                                'gelar_depan' => $dataRow['gelar_depan'] ?? null,
-                                'gelar_belakang' => $dataRow['gelar_belakang'] ?? null,
-                                'tempat_lahir_id' => $dataRow['tempat_lahir_id'] ?? null,
-                                'tempat_lahir_nama' => $dataRow['tempat_lahir_nama'] ?? null,
-                                'tanggal_lahir' => $dataRow['tanggal_lahir'] ?? null,
-                                'jenis_kelamin' => $dataRow['jenis_kelamin'] ?? null,
-                                'agama_id' => $dataRow['agama_id'] ?? null,
-                                'agama_nama' => $dataRow['agama_nama'] ?? null,
-                                'jenis_kawin_id' => $dataRow['jenis_kawin_id'] ?? null,
-                                'jenis_kawin_nama' => $dataRow['jenis_kawin_nama'] ?? null,
-                                'nik' => $dataRow['nik'] ?? null,
-                                'nomor_hp' => $dataRow['nomor_hp'] ?? null,
-                                'email' => $dataRow['email'] ?? null,
-                                'email_gov' => $dataRow['email_gov'] ?? null,
-                                'alamat' => $dataRow['alamat'] ?? null,
-                                'npwp_nomor' => $dataRow['npwp_nomor'] ?? null,
-                                'bpjs' => $dataRow['bpjs'] ?? null,
-                                'kedudukan_hukum_id' => $dataRow['kedudukan_hukum_id'] ?? null,
-                                'kedudukan_hukum_nama' => $dataRow['kedudukan_hukum_nama'] ?? null,
-                                'status_cpns_pns' => $dataRow['status_cpns_pns'] ?? null,
-                                'kartu_asn_virtual' => $dataRow['kartu_asn_virtual'] ?? null,
-                                'nomor_sk_cpns' => $dataRow['nomor_sk_cpns'] ?? null,
-                                'tanggal_sk_cpns' => $dataRow['tanggal_sk_cpns'] ?? null,
-                                'tmt_cpns' => $dataRow['tmt_cpns'] ?? null,
-                                'nomor_sk_pns' => $dataRow['nomor_sk_pns'] ?? null,
-                                'tanggal_sk_pns' => $dataRow['tanggal_sk_pns'] ?? null,
-                                'tmt_pns' => $dataRow['tmt_pns'] ?? null,
-                                'gol_awal_id' => $dataRow['gol_awal_id'] ?? null,
-                                'gol_awal_nama' => $dataRow['gol_awal_nama'] ?? null,
-                                'gol_akhir_id' => $dataRow['gol_akhir_id'] ?? null,
-                                'gol_akhir_nama' => $dataRow['gol_akhir_nama']  ?? null,
-                                'tmt_golongan' => $dataRow['tmt_golongan'] ?? null,
-                                'mk_tahun' => $dataRow['mk_tahun'] ?? null,
-                                'mk_bulan' => $dataRow['mk_bulan'] ?? null,
-                                'jenis_jabatan_id' => $dataRow['jenis_jabatan_id'] ?? null,
-                                'jenis_jabatan_nama' => $dataRow['jenis_jabatan_nama'] ?? null,
-                                'jabatan_id' => $dataRow['jabatan_id'] ?? null,
-                                'jabatan_nama' => $dataRow['jabatan_nama'] ?? null,
-                                'tmt_jabatan' => $dataRow['tmt_jabatan'] ?? null,
-                                'tingkat_pendidikan_id' => $dataRow['tingkat_pendidikan_id'] ?? null,
-                                'tingkat_pendidikan_nama' => $dataRow['tingkat_pendidikan_nama'] ?? null,
-                                'pendidikan_id' => $dataRow['pendidikan_id'] ?? null,
-                                'pendidikan_nama' => $dataRow['pendidikan_nama'] ?? null,
-                                'tahun_lulus' => $dataRow['tahun_lulus'] ?? null,
-                                'kpkn_id' => $dataRow['kpkn_id'] ?? null,
-                                'kpkn_nama' => $dataRow['kpkn_nama'] ?? null,
-                                'lokasi_kerja_id' => $dataRow['lokasi_kerja_id'] ?? null,
-                                'lokasi_kerja_nama' => $dataRow['lokasi_kerja_nama'] ?? null,
-                                'unor_id' => $dataRow['unor_id'] ?? null,
-                                'unor_nama' => $dataRow['unor_nama'] ?? null,
-                                'instansi_induk_id' => $dataRow['instansi_induk_id'] ?? null,
-                                'instansi_induk_nama' => $dataRow['instansi_induk_nama'] ?? null,
-                                'instansi_kerja_id' => $dataRow['instansi_kerja_id'] ?? null,
-                                'instansi_kerja_nama' => $dataRow['instansi_kerja_nama'] ?? null,
-                                'satuan_kerja_induk_id' => $dataRow['satuan_kerja_induk_id'] ?? null,
-                                'satuan_kerja_induk_nama' => $dataRow['satuan_kerja_induk_nama'] ?? null,
-                                'satuan_kerja_kerja_id' => $dataRow['satuan_kerja_kerja_id'] ?? null,
-                                'satuan_kerja_kerja_nama' => $dataRow['satuan_kerja_kerja_nama'] ?? null,
-                                'is_valid_nik' => $dataRow['is_valid_nik'] ?? null,
-                                'nama_sekolah' => $dataRow['nama_sekolah'] ?? null,
-                                'flag_ikd' => $dataRow['flag_ikd'] ?? null,
-                            ]);
-                        }
-
-                        fclose($handle);
-
-                        DB::commit();
-
-                        Notification::make()
-                            ->title('Import berhasil')
-                            ->success()
-                            ->send();
-
-                    } catch (\Exception $e) {
-
-                        DB::rollBack();
-
-                        Notification::make()
-                            ->title('Import gagal: ' . $e->getMessage())
-                            ->danger()
-                            ->send();
-                    }
-                }),
-
+            // ========================
+            // 2. SINKRON PEGAWAI (AMAN)
+            // ========================
             Action::make('sinkronPegawai')
             ->label('Sinkron Pegawai')
+            ->color('success')
             ->action(function () {
-                DB::table('pegawais')->truncate();
+                $data = DB::table('staging_import')
+                ->whereNotNull('pns_id')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'pns_id' => $row->pns_id,
+                        'nip_baru' => trim($row->nip_baru),
+                        'nip_lama' => trim($row->nip_lama),
+                        'nik' => trim($row->nik),
+
+                        'nama' => $row->nama,
+                        'gelar_depan' => $row->gelar_depan,
+                        'gelar_belakang' => $row->gelar_belakang,
+
+                        'tempat_lahir_id' => $row->tempat_lahir_id,
+                        'tanggal_lahir' => $row->tanggal_lahir
+                            ? \Carbon\Carbon::createFromFormat('d-m-Y', $row->tanggal_lahir)
+                            : null,
+
+                        'tmt_cpns' => $row->tmt_cpns
+                            ? \Carbon\Carbon::createFromFormat('d-m-Y', $row->tmt_cpns)
+                            : null,
+
+                        'jenis_kelamin' => strtolower($row->jenis_kelamin),
+
+                        'agama_id' => $row->agama_id ? (int) $row->agama_id : null,
+                        'golongan_id' => trim($row->gol_akhir_id),
+                        'jabatan_id' => $row->jabatan_id,
+                        'pend_id' => $row->pendidikan_id,
+                        'unor_id' => $row->unor_id,
+                        'jenis_kawin_id' => $row->jenis_kawin_id ? (int) $row->jenis_kawin_id : null,
+
+                        'nomor_hp' => $row->nomor_hp,
+                        'email' => $row->email,
+                        'email_gov' => $row->email_gov,
+                        'alamat' => $row->alamat,
+
+                        'npwp_nomor' => $row->npwp_nomor,
+                        'bpjs' => $row->bpjs,
+
+                        'kedudukan_hukum_id' => $row->kedudukan_hukum_id
+                            ? (int) $row->kedudukan_hukum_id
+                            : null,
+
+                        'kartu_asn_virtual' => $row->kartu_asn_virtual,
+                        'status_cpns_pns' => $row->status_cpns_pns,
+
+                        'nomor_sk_cpns' => $row->nomor_sk_cpns,
+                        'tanggal_sk_cpns' => $row->tanggal_sk_cpns
+                            ? \Carbon\Carbon::createFromFormat('d-m-Y', $row->tanggal_sk_cpns)
+                            : null,
+
+                        'nomor_sk_pns' => $row->nomor_sk_pns,
+                        'tanggal_sk_pns' => $row->tanggal_sk_pns
+                            ? \Carbon\Carbon::createFromFormat('d-m-Y', $row->tanggal_sk_pns)
+                            : null,
+
+                        'is_valid_nik' => 1,
+
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                })->toArray();
+
+                // Chunk data and upsert in batches
+                foreach (array_chunk($data, 500) as $chunk) {
+                    DB::table('pegawais')->upsert(
+                        $chunk,
+                        ['pns_id'],
+                        [
+                            'nip_baru',
+                            'nip_lama',
+                            'nama',
+                            'jabatan_id',
+                            'golongan_id',
+                            'pend_id',
+                            'unor_id',
+                            'kedudukan_hukum_id',
+                            'updated_at'
+                        ]
+                    );
+                }
+
+                Notification::make()
+                    ->title('Pegawai berhasil disinkron')
+                    ->success()
+                    ->send();
+            }),
+            // ========================
+            // 3. SINKRON JABATAN (WAJIB)
+            // ========================
+            /* Action::make('sinkronRJabatan')
+            ->label('Sinkron RJabatan')
+            ->color('warning')
+            ->requiresConfirmation()
+            ->action(function () {
+
+                DB::table('r_jabatans')->truncate();
 
                 DB::statement("
-                    INSERT INTO pegawais (
-                        pns_id,
-                        nip_baru,
-                        nip_lama,
-                        nama,
-                        gelar_depan,
-                        gelar_belakang,
-                        tempat_lahir_id,
-                        tanggal_lahir,
-                        jenis_kelamin,
-                        agama_id,
-                        jenis_kawin_id,
-                        nik,
-                        nomor_hp,
-                        email,
-                        email_gov,
-                        alamat,
-                        npwp_nomor,
-                        bpjs,
-                        golongan_id,
-                        jenis_pegawai_id, -- Pastikan kolom snapshot ini sudah ada di migration tadi
-                        kedudukan_hukum_id,
-                        status_cpns_pns,
-                        kartu_asn_virtual,
-                        nomor_sk_cpns,
-                        tanggal_sk_cpns,
-                        tmt_cpns,
-                        nomor_sk_pns,
-                        tanggal_sk_pns,
-                        tmt_pns,
+                    INSERT INTO r_jabatans (
+                        pegawai_id,
+                        jabatan_id,
+                        tmt_jabatan,
                         created_at,
                         updated_at
                     )
                     SELECT
-                        s.pns_id,
-                        s.nip_baru,
-                        s.nip_lama,
-                        s.nama,
-                        s.gelar_depan,
-                        s.gelar_belakang,
-                        s.tempat_lahir_id,
-                        STR_TO_DATE(NULLIF(s.tanggal_lahir, ''), '%d-%m-%Y'),
-                        s.jenis_kelamin,
-                        a.id,
-                        s.jenis_kawin_id,
-                        s.nik,
-                        s.nomor_hp,
-                        s.email,
-                        s.email_gov,
-                        s.alamat,
-                        s.npwp_nomor,
-                        s.bpjs,
-                        g.id,
-                        jp.id, -- Sekarang alias 'jp' sudah aman karena ada JOIN di bawah
-                        kh.id,
-                        s.status_cpns_pns,
-                        s.kartu_asn_virtual,
-                        s.nomor_sk_cpns,
-                        STR_TO_DATE(NULLIF(s.tanggal_sk_cpns, ''), '%d-%m-%Y'),
-                        STR_TO_DATE(NULLIF(s.tmt_cpns, ''), '%d-%m-%Y'),
-                        s.nomor_sk_pns,
-                        STR_TO_DATE(NULLIF(s.tanggal_sk_pns, ''), '%d-%m-%Y'),
-                        STR_TO_DATE(NULLIF(s.tmt_pns, ''), '%d-%m-%Y'),
+                        p.id,
+                        j.id,
+                        STR_TO_DATE(NULLIF(s.tmt_jabatan, ''), '%d-%m-%Y'),
                         NOW(),
                         NOW()
                     FROM staging_import s
-                    LEFT JOIN agamas a ON s.agama_id = a.id
-                    LEFT JOIN golongans g ON s.gol_akhir_id = g.id
-                    LEFT JOIN jenis_pegawais jp ON s.jenis_pegawai_id = jp.jenis_pegawai_id -- Tambahkan baris ini
-                    LEFT JOIN kedudukan_hukums kh ON s.kedudukan_hukum_id = kh.kedudukan_hukum_id
+                    JOIN pegawais p ON s.pns_id = p.pns_id
+                    LEFT JOIN jabatans j ON s.jabatan_id = j.id
+                    WHERE s.jabatan_id IS NOT NULL
                 ");
-                Notification::make()->title('Data Pegawai Dasar Berhasil Disinkron')->success()->send();
+                Notification::make()
+                    ->title('Jabatan berhasil disinkron')
+                    ->success()
+                    ->send();
             }),
-            Action::make('sinkronPangkat')
-            ->label('Sinkron Pangkat')
+ */
+
+            // ========================
+            // 4. SINKRON PENDIDIKAN
+            // ========================
+/*          Action::make('sinkronRPendidikan')
+            ->label('Sinkron RPendidikan')
+            ->color('info')
+            ->requiresConfirmation()
             ->action(function () {
-                DB::table('r_pangkats')->truncate();
 
-                // 1. Masukkan data ke riwayat pangkat
-                DB::statement("
-                    INSERT INTO r_pangkats (pegawai_id, golongan_id, tmt_golongan, mk_tahun, mk_bulan, created_at, updated_at)
-                    SELECT
-                        p.id, g.id,
-                        STR_TO_DATE(NULLIF(s.tmt_golongan, ''), '%d-%m-%Y'),
-                        CAST(NULLIF(s.mk_tahun, '') AS UNSIGNED),
-                        CAST(NULLIF(s.mk_bulan, '') AS UNSIGNED),
-                        NOW(), NOW()
-                    FROM staging_import s
-                    JOIN pegawais p ON s.nip_baru = p.nip_baru
-                    LEFT JOIN golongans g ON s.gol_akhir_id = g.golongan_id
-                    WHERE s.tmt_golongan IS NOT NULL AND s.tmt_golongan != ''
-                ");
+                DB::table('r_pends')->truncate();
 
-                // 2. BACK-FEED: Update tabel pegawais agar r_pangkat_id mengarah ke riwayat terbaru
                 DB::statement("
-                    UPDATE pegawais p
-                    JOIN r_pangkats rp ON p.id = rp.pegawai_id
-                    SET p.r_pangkat_id = rp.id
-                    WHERE rp.id IN (
-                        SELECT max_id FROM (
-                            SELECT MAX(id) as max_id FROM r_pangkats GROUP BY pegawai_id
-                        ) as tmp
+                    INSERT INTO r_pends (
+                        pegawai_id,
+                        pendidikan_id,
+                        tingkat_pendidikan_id,
+                        nama_sekolah,
+                        tahun_lulus,
+                        created_at,
+                        updated_at
                     )
+                    SELECT
+                        p.id,
+                        pend.id,
+                        tp.id,
+                        s.nama_sekolah,
+                        s.tahun_lulus,
+                        NOW(),
+                        NOW()
+                    FROM staging_import s
+                    JOIN pegawais p ON s.pns_id = p.pns_id
+                    LEFT JOIN pendidikans pend ON s.pendidikan_id = pend.id
+                    LEFT JOIN tingkat_pendidikans tp ON s.tingkat_pendidikan_id = tp.id
                 ");
 
-                Notification::make()->title('Riwayat Pangkat & Relasi Pegawai Diperbarui')->success()->send();
-            }),
-                Action::make('sinkronPendidikan')
-                    ->label('Sinkron Pendidikan')
-                    ->icon('heroicon-o-academic-cap')
-                    ->color('info')
-                    ->requiresConfirmation()
-                    ->action(fn() => DB::table('r_pends')->truncate())
-                    ->action(function () {
+                Notification::make()
+                    ->title('Pendidikan berhasil disinkron')
+                    ->success()
+                    ->send();
+            }), */
 
-                            $affected = DB::affectingStatement("
-                            INSERT INTO r_pends (
-                                pns_id,
-                                nip,
-                                tingkat_pendidikan_id,
-                                pendidikan_id,
-                                nama_sekolah,
-                                tahun_lulus
-                            )
-                            SELECT
-                                p.pns_id,
-                                s.nip_baru,
-                                s.tingkat_pendidikan_id,
-                                s.pendidikan_id,
-                                s.nama_sekolah,
-                                CAST(NULLIF(s.tahun_lulus, '') AS UNSIGNED)
+            Action::make('sinkronJabatan')
+                ->label('Sinkron Jabatan')
+                ->icon('heroicon-o-arrow-path')
+                ->color('primary')
+                ->action(function () {
 
-                            FROM staging_import s
-                            JOIN pegawais p ON p.nip_baru = s.nip_baru
+                    $rows = DB::table('staging_import')
+                        ->select('jabatan_id', 'unor_nama', 'jabatan_nama', 'unor_id')
+                        ->whereNotNull('jabatan_id')
+                        ->whereNotNull('jabatan_nama')
+                        ->distinct()
+                        ->get();
 
-                            LEFT JOIN (
-                                SELECT r1.*
-                                FROM r_pends r1
-                                JOIN (
-                                    SELECT pns_id, MAX(tahun_lulus) as max_tahun
-                                    FROM r_pends
-                                    GROUP BY pns_id
-                                ) r2
-                                ON r1.pns_id = r2.pns_id
-                                AND r1.tahun_lulus = r2.max_tahun
-                            ) last
-                            ON last.pns_id = p.pns_id
+                    $now = now();
 
-                            WHERE
-                                s.tahun_lulus IS NOT NULL
-                                AND s.tahun_lulus != ''
+                    $data = $rows->map(function ($row) use ($now) {
+                        $nama = strtolower(trim(preg_replace('/\s+/', ' ', $row->jabatan_nama)));
+                        $unor_nama = strtolower(trim(preg_replace('/\s+/', ' ', $row->unor_nama ?? '')));
 
-                                AND (
-                                    last.id IS NULL
-                                    OR last.tingkat_pendidikan_id != s.tingkat_pendidikan_id
-                                    OR last.pendidikan_id != s.pendidikan_id
-                                    OR last.tahun_lulus != CAST(NULLIF(s.tahun_lulus, '') AS UNSIGNED)
-                                    OR last.nama_sekolah != s.nama_sekolah
-                                );
-                            ");
+                        // Catatan: Pastikan logika deteksi jenis ini sudah benar sesuai data staging Anda
+                        // Jika 'unor_id' adalah tipe jabatan, gunakan itu.
+                        $jenis = (int) $row->unor_id;
 
-                            \Filament\Notifications\Notification::make()
-                                ->title('Sinkron pendidikan selesai')
-                                ->body("Data baru: {$affected}")
-                                ->success()
-                                ->send();
-                        }),
+                        // =========================
+                        // KELOMPOK JABATAN (kel_jab)
+                        // =========================
+                        $kel_jab = 'jf lainnya'; // Default
+
+                        if ($jenis === 1) {
+                            $kel_jab = 'struktural';
+                        } elseif ($jenis === 2) {
+                            if (str_contains($nama, 'guru')) {
+                                $kel_jab = 'jf guru';
+                            } elseif (preg_match('/dokter|dokter gigi|perawat|bidan|apoteker|psikolog|terapis|anestesi|epidemiolog|fisioterapis|nutrisionis|sanitasi|radiografer|laboratorium|perekam medis|okupasi|ortotis|teknisi|wicara|administrator kesehatan|entomolog/i', $nama)) {
+                                $kel_jab = 'jf kesehatan';
+                            } else {
+                                $kel_jab = 'jf lainnya';
+                            }
+                        } elseif ($jenis === 4) {
+                            $kel_jab = 'pelaksana';
+                        }
+
+                        // =========================
+                        // ESELON (Logika disingkat untuk efisiensi)
+                        // =========================
+                        $eselon = null;
+                        if ($jenis === 1) {
+                            if (str_contains($nama, 'sekretaris daerah')) $eselon = 'II/a';
+                            elseif (preg_match('/^(kepala dinas|kepala badan|inspektur|sekretaris dprd|staf ahli|asisten b|asisten p)/', $nama)) $eselon = 'II/b';
+                            elseif (preg_match('/camat/i', $nama)) $eselon = 'III/a';
+                            elseif (preg_match('/(kabid|kepala bidang|direktur rumah sakit)/i', $nama)) $eselon = 'III/b';
+                            elseif (preg_match('/(kasi|kepala seksi|kasubbid|lurah)/i', $nama)) $eselon = 'IV/a';
+                            elseif (preg_match('/(kasubbag|kepala sub bagian)/i', $nama)) $eselon = 'IV/a';
+                        }
+
+                        return [
+                            'jabatan_id'   => $row->jabatan_id,
+                            'jabatan_nama' => $row->jabatan_nama,
+                            'unor_nama'    => $row->unor_nama,
+                            'kel_jab'      => $kel_jab,
+                            'eselon'       => $eselon,
+                            // Kolom tambahan sesuai struktur tabel Anda
+                            'bup'          => null, // Tambahkan logika jika ada data BUP
+                            'jenjang'      => null, // Tambahkan logika jika ada data Jenjang
+                            'created_at'   => $now,
+                            'updated_at'   => $now,
+                        ];
+                    });
+
+                    // Upsert dengan kolom yang sesuai struktur
+                    $data->chunk(500)->each(function ($chunk) {
+                        DB::table('jabatans')->upsert(
+                            $chunk->toArray(),
+                            ['jabatan_id'], // Primary Key
+                            ['jabatan_nama', 'unor_nama', 'kel_jab', 'eselon', 'bup', 'jenjang', 'updated_at']
+                        );
+                    });
+
+                    Notification::make()
+                        ->title('Sinkronisasi Berhasil')
+                        ->success()
+                        ->send();
+                }),
         ]);
     }
 

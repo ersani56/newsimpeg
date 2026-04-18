@@ -19,88 +19,64 @@ class StatistikJabatan extends Page
 
     public $data = [];
 
-    public function mount()
-    {
-        $this->data = DB::table('pegawais as p')
+        public function mount()
+        {
+            $this->data = $this->getData();
+        }
 
-            ->join(DB::raw("
-                (
-                    SELECT pegawai_id, MAX(tmt_jabatan) as max_tmt
-                    FROM r_jabatans
-                    GROUP BY pegawai_id
-                ) as latest
-            "), 'latest.pegawai_id', '=', 'p.id')
+        public function getData()
+        {
+            $query = DB::table('pegawais as p')
+                // Gunakan LEFT JOIN agar jika jabatan tidak ditemukan, pegawai tetap terhitung
+                ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
+                ->selectRaw("
+                    CASE
+                        WHEN j.kel_jab IS NULL THEN 'Belum Dikategorikan'
 
-            ->join('r_jabatans as r', function ($join) {
-                $join->on('r.pegawai_id', '=', 'latest.pegawai_id')
-                    ->on('r.tmt_jabatan', '=', 'latest.max_tmt');
-            })
+                        WHEN LOWER(j.kel_jab) IN ('jf guru', 'jf kesehatan', 'jf lainnya') THEN j.kel_jab
+                        WHEN LOWER(j.kel_jab) = 'pelaksana' THEN 'pelaksana'
+                        WHEN LOWER(j.kel_jab) = 'struktural' AND j.eselon IS NOT NULL THEN j.eselon
+                    END as kelompok,
 
-            ->join('jabatans as j', 'r.jabatan_id', '=', 'j.id')
-            ->leftJoin('jenis_jabatans as jj', 'j.jenis_jabatan_id', '=', 'jj.id')
+                    SUM(CASE WHEN p.kedudukan_hukum_id IN (1,2,3,4,13,15) AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pns_l,
+                    SUM(CASE WHEN p.kedudukan_hukum_id IN (1,2,3,4,13,15) AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pns_p,
+                    SUM(CASE WHEN p.kedudukan_hukum_id = 71 AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pppk_l,
+                    SUM(CASE WHEN p.kedudukan_hukum_id = 71 AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pppk_p,
+                    SUM(CASE WHEN p.kedudukan_hukum_id = 101 AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pppk_pw_l,
+                    SUM(CASE WHEN p.kedudukan_hukum_id = 101 AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pppk_pw_p
+                ")
+                ->groupBy('kelompok')
+                ->get();
 
-            ->selectRaw("
-                CASE
-                    -- STRUKTURAL (pakai eselon langsung)
-                    WHEN jj.nama = 'struktural' AND j.eselon IS NOT NULL THEN CONCAT('Eselon ', j.eselon)
+            // Urutan yang sesuai dengan hasil pengelompokan di atas
+            // Mapping antara nilai di database dengan label yang ingin ditampilkan
+            $kategori = [
+                'II/a' => 'Eselon II/a',
+                'II/b' => 'Eselon II/b',
+                'III/a' => 'Eselon III/a',
+                'III/b' => 'Eselon III/b',
+                'IV/a' => 'Eselon IV/a',
+                'IV/b' => 'Eselon IV/b',
+                'pelaksana' => 'Pelaksana',
+                'jf guru' => 'JF Guru',
+                'jf kesehatan' => 'JF Kesehatan',
+                'jf lainnya' => 'JF Lainnya',
+            ];
 
-                    -- FUNGSIONAL
-                    WHEN LOWER(j.kel_jab) = 'jf guru' THEN 'Fungsional Guru'
-                    WHEN LOWER(j.kel_jab) = 'jf kesehatan' THEN 'Fungsional Kesehatan'
-                    WHEN LOWER(j.kel_jab) = 'jf lainnya' THEN 'Fungsional Lainnya'
+            return collect($kategori)->map(function ($label, $db_key) use ($query) {
+                $row = $query->firstWhere('kelompok', $db_key);
 
-                    -- PELAKSANA
-                    WHEN jj.nama = 'pelaksana' THEN 'Pelaksana'
-
-                    ELSE 'Lainnya'
-                END as kelompok_jabatan,
-
-                SUM(CASE
-                    WHEN p.kedudukan_hukum_id IN (11,12,13,14,15,16)
-                    AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pns_l,
-
-                SUM(CASE
-                    WHEN p.kedudukan_hukum_id IN (11,12,13,14,15,16)
-                    AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pns_p,
-
-                SUM(CASE
-                    WHEN p.kedudukan_hukum_id = 17
-                    AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pppk_l,
-
-                SUM(CASE
-                    WHEN p.kedudukan_hukum_id = 17
-                    AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pppk_p,
-
-                SUM(CASE
-                    WHEN p.kedudukan_hukum_id = 18
-                    AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pppk_pw_l,
-
-                SUM(CASE
-                    WHEN p.kedudukan_hukum_id = 18
-                    AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pppk_pw_p
-            ")
-
-            ->groupBy('kelompok_jabatan')
-
-            ->orderByRaw("
-                CASE
-                    WHEN kelompok_jabatan = 'Eselon II/a' THEN 1
-                    WHEN kelompok_jabatan = 'Eselon II/b' THEN 2
-                    WHEN kelompok_jabatan = 'Eselon III/a' THEN 3
-                    WHEN kelompok_jabatan = 'Eselon III/b' THEN 4
-                    WHEN kelompok_jabatan = 'Eselon IV/a' THEN 5
-                    WHEN kelompok_jabatan = 'Eselon IV/b' THEN 6
-                    WHEN kelompok_jabatan = 'Fungsional Guru' THEN 7
-                    WHEN kelompok_jabatan = 'Fungsional Kesehatan' THEN 8
-                    WHEN kelompok_jabatan = 'Fungsional Lainnya' THEN 9
-                    WHEN kelompok_jabatan = 'Pelaksana' THEN 10
-                    ELSE 11
-                END
-            ")
-
-            ->get()
-            ->toArray();
-    }
+                return (object)[
+                    'kelompok_jabatan' => $label, // Ini yang akan muncul di PDF/Tampilan
+                    'pns_l' => $row->pns_l ?? 0,
+                    'pns_p' => $row->pns_p ?? 0,
+                    'pppk_l' => $row->pppk_l ?? 0,
+                    'pppk_p' => $row->pppk_p ?? 0,
+                    'pppk_pw_l' => $row->pppk_pw_l ?? 0,
+                    'pppk_pw_p' => $row->pppk_pw_p ?? 0,
+                ];
+            })->toArray();
+        }
         public function exportPdf()
         {
             $payload = [
