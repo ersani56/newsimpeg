@@ -35,8 +35,8 @@
         <div class="statistik-header">
             <div>🎓 STATISTIK PEGAWAI PER PENDIDIKAN</div>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-export btn-pdf" wire:click="exportPdf">📄 PDF</button>
-                <button class="btn-export btn-excel" onclick="exportToExcel()">📊 Excel</button>
+                <button class="btn-export btn-pdf" wire:click="exportPdf">📄 Export ke PDF</button>
+                <button class="btn-export btn-excel" onclick="exportToExcel()">📊 Export ke Excel</button>
             </div>
         </div>
 

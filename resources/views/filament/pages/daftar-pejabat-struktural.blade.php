@@ -12,7 +12,7 @@
                 </select>
 
                 <x-filament::button wire:click="exportPdf" color="danger">
-                    Export PDF
+                    Export ke PDF
                 </x-filament::button>
 
             </div>
@@ -28,7 +28,8 @@
             <thead>
                 <tr>
                     <th>NO</th>
-                    <th>NAMA / NIP</th>
+                    <th>NAMA</th>
+                    <th>NIP</th>
                     <th>JABATAN</th>
                     <th>ESELON</th>
                     <th>UNIT KERJA</th>
@@ -38,11 +39,9 @@
             <tbody>
                 @forelse($this->pejabat as $i => $p)
                     <tr>
-                        <td>{{ $i + 1 }}</td>
-                        <td>
-                            {{ $p->nama }}<br>
-                            {{ $p->nip_baru ?? '-' }}
-                        </td>
+                        <td>{{ $i + 1}}</td>
+                        <td>{{ $p->nama }}</td>
+                        <td>{{ $p->nip_baru }}</td>
                         <td>{{ $p->jabatan_nama }}</td>
                         <td>{{ $p->eselon_display }}</td>
                         <td>{{ $p->unor_nama }}</td>

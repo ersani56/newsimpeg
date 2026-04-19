@@ -24,10 +24,13 @@ class DaftarPegawaiFungsional extends Page
             return DB::table('pegawais as p')
 
                 ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
-
+                ->leftJoin('golongans as g', 'p.golongan_id', '=', 'g.golongan_id')
+                ->leftJoin('kedudukan_hukums as k', 'p.kedudukan_hukum_id', '=', 'k.kedudukan_hukum_id')
                 ->select([
                     'p.nama',
                     'p.nip_baru',
+                    'k.nama as kh_nama',
+                    'g.golru as golru_display',
                     'j.jabatan_nama',
                     'j.unor_nama',
 

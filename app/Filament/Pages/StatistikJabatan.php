@@ -2,9 +2,10 @@
 
 namespace App\Filament\Pages;
 
+use BackedEnum;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
-use BackedEnum;
 use UnitEnum;
 
 class StatistikJabatan extends Page
@@ -79,18 +80,19 @@ class StatistikJabatan extends Page
         }
         public function exportPdf()
         {
+            $data = $this->data; // pastikan ini ada
+
             $payload = [
                 'date' => now()->translatedFormat('d F Y H:i'),
-                'data' => $this->data,
+                'data' => $data,
             ];
 
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('filament.pages.exports.statistik-jabatan-pdf', $payload);
+            $pdf = Pdf::loadView('filament.pages.exports.statistik-jabatan-pdf', $payload);
 
-            // Set kertas F4 (8.5 x 13 inci)
             $pdf->setPaper([0, 0, 612, 936], 'portrait');
 
-            return response()->streamDownload(function() use ($pdf) {
+            return response()->streamDownload(function () use ($pdf) {
                 echo $pdf->output();
-            }, 'statistik-jabatan-' . date('YmdHis') . '.pdf');
+            }, 'statistik-jabatan-' . now()->format('YmdHis') . '.pdf');
         }
 }

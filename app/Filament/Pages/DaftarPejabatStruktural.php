@@ -50,4 +50,34 @@ public $filterEselon = 'semua';
             ->orderBy('p.nama', 'asc')
             ->get();
     }
+
+    public function exportPdf()
+    {
+        $data = collect($this->pejabat); // ambil dari accessor
+
+        // amankan null
+        $data = $data->map(function ($row) {
+            $row->nama = $row->nama ?? '-';
+            $row->nip_baru = $row->nip_baru ?? '-';
+            $row->jabatan_nama = $row->jabatan_nama ?? '-';
+            $row->eselon_display = $row->eselon_display ?? '-';
+            $row->unor_nama = $row->unor_nama ?? '-';
+            return $row;
+        });
+
+        $payload = [
+            'date' => now()->translatedFormat('d F Y H:i'),
+            'data' => $data,
+            'filter' => $this->filterEselon,
+        ];
+
+        $pdf = Pdf::loadView('filament.pages.exports.daftar-pejabat-pdf', $payload);
+
+        $pdf->setPaper([0, 0, 612, 936], 'portrait');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'daftar-pejabat-struktural-' . now()->format('Y-m-d_H-i-s') . '.pdf');
+    }
+
 }

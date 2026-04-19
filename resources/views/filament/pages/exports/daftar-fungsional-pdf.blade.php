@@ -22,7 +22,10 @@
     <thead>
         <tr>
             <th>NO</th>
-            <th>NAMA / NIP</th>
+            <th>NAMA</th>
+            <th>NIP</th>
+            <th>KEDUDUKAN HUKUM</th>
+            <th>GOLRU</th>
             <th>JABATAN</th>
             <th>UNIT KERJA</th>
         </tr>
@@ -31,8 +34,11 @@
     <tbody>
         @forelse($pegawai as $i => $p)
             <tr>
-                <td class="center">{{ $i + 1 }}</td>
-                <td>{{ $p->nama }}<br>{{ $p->nip_baru }}</td>
+                <td class="center">{{ $i+1}}</td>
+                <td>{{ $p->nama }}</td>
+                <td> {{ $p->nip_baru }}</td>
+                <td>{{ $p->kh_nama }}</td>
+                <td>{{ $p->golru_display }}</td>
                 <td>{{ $p->jabatan_nama }}</td>
                 <td>{{ $p->unor_nama }}</td>
             </tr>

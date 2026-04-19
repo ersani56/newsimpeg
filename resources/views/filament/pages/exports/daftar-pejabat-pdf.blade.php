@@ -22,7 +22,8 @@
     <thead>
         <tr>
             <th>NO</th>
-            <th>NAMA / NIP</th>
+            <th>NAMA</th>
+            <th>NIP</th>
             <th>JABATAN</th>
             <th>ESELON</th>
             <th>UNIT KERJA</th>
@@ -30,17 +31,18 @@
     </thead>
 
     <tbody>
-        @forelse($pejabat as $i => $p)
+        @forelse($data as $i => $p)
             <tr>
                 <td class="center">{{ $i + 1 }}</td>
-                <td>{{ $p->nama }}<br>{{ $p->nip_baru }}</td>
+                <td>{{ $p->nama }}</td>
+                <td>{{ $p->nip_baru }}</td>
                 <td>{{ $p->jabatan_nama }}</td>
                 <td class="center">{{ $p->eselon_display }}</td>
                 <td>{{ $p->unor_nama }}</td>
             </tr>
         @empty
             <tr>
-                <td colspan="5" class="center">Tidak ada data</td>
+                <td colspan="6" class="center">Tidak ada data</td>
             </tr>
         @endforelse
     </tbody>

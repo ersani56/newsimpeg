@@ -21,8 +21,8 @@
         <div class="statistik-header">
             <div>🚻 STATISTIK PEGAWAI PER JENIS KELAMIN</div>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-export btn-pdf" wire:click="exportPdf">📄 PDF</button>
-                <button class="btn-export btn-excel" onclick="exportToExcel()">📊 Excel</button>
+                <button class="btn-export btn-pdf" wire:click="exportPdf">📄 Export ke PDF</button>
+                <button class="btn-export btn-excel" onclick="exportToExcel()">📊 Export ke Excel</button>
             </div>
         </div>
 

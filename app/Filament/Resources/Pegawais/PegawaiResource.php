@@ -382,7 +382,7 @@ class PegawaiResource extends Resource
                     ->send();
             }), */
 
-            Action::make('sinkronJabatan')
+            /* Action::make('sinkronJabatan')
                 ->label('Sinkron Jabatan')
                 ->icon('heroicon-o-arrow-path')
                 ->color('primary')
@@ -464,7 +464,7 @@ class PegawaiResource extends Resource
                         ->title('Sinkronisasi Berhasil')
                         ->success()
                         ->send();
-                }),
+                }), */
         ]);
     }
 
