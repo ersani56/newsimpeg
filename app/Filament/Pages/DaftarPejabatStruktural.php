@@ -11,7 +11,7 @@ use UnitEnum;
 class DaftarPejabatStruktural extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-identification';
-    protected static ?string $navigationLabel = 'Daftar Pejabat';
+    protected static ?string $navigationLabel = 'Struktural';
     protected string $view = 'filament.pages.daftar-pejabat-struktural';
     protected static ?string $title = 'Daftar Pejabat Struktural';
     protected static string|UnitEnum|null $navigationGroup = 'Daftar Pegawai'; // Atau grup lain sesuai keinginan Anda
@@ -24,10 +24,12 @@ public $filterEselon = 'semua';
 
             // ambil jabatan dari snapshot
             ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
+            ->leftjoin('golongans as g', 'p.golongan_id', '=', 'g.golongan_id')
             ->select([
                 'p.nama',
                 'p.nip_baru',
                 'j.jabatan_nama',
+                'g.golru as golru_display',
                 'j.eselon as eselon_display',
                 'j.unor_nama',
             ])

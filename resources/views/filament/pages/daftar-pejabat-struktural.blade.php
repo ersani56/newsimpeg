@@ -30,6 +30,7 @@
                     <th>NO</th>
                     <th>NAMA</th>
                     <th>NIP</th>
+                    <th>GOL</th>
                     <th>JABATAN</th>
                     <th>ESELON</th>
                     <th>UNIT KERJA</th>
@@ -42,6 +43,7 @@
                         <td>{{ $i + 1}}</td>
                         <td>{{ $p->nama }}</td>
                         <td>{{ $p->nip_baru }}</td>
+                        <td>{{ $p->golru_display }}</td>
                         <td>{{ $p->jabatan_nama }}</td>
                         <td>{{ $p->eselon_display }}</td>
                         <td>{{ $p->unor_nama }}</td>

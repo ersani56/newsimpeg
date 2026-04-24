@@ -31,7 +31,7 @@
                     <th>NO</th>
                     <th>NAMA</th>
                     <th>NIP</th>
-                    <th>KEDUDUKAN HUKUM</th>
+                    <th>KD. HUKUM</th>
                     <th>GOLRU</th>
                     <th>JABATAN</th>
                     <th>UNIT KERJA</th>

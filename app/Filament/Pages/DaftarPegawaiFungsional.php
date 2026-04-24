@@ -11,8 +11,8 @@ use UnitEnum;
 class DaftarPegawaiFungsional extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationLabel = 'Daftar Fungsional';
-    protected static ?string $title = 'Daftar Pejabat Fungsional & Pelaksana';
+    protected static ?string $navigationLabel = 'Fungsional & Pelaksana';
+    protected static ?string $title = 'Daftar Pegawai Fungsional & Pelaksana';
     protected static string|UnitEnum|null $navigationGroup = 'Daftar Pegawai';
 
     protected string $view = 'filament.pages.daftar-pegawai-fungsional';
@@ -26,13 +26,14 @@ class DaftarPegawaiFungsional extends Page
                 ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
                 ->leftJoin('golongans as g', 'p.golongan_id', '=', 'g.golongan_id')
                 ->leftJoin('kedudukan_hukums as k', 'p.kedudukan_hukum_id', '=', 'k.kedudukan_hukum_id')
+                ->leftJoin('unors as u', 'p.unor_id', '=', 'u.unor_id')
                 ->select([
                     'p.nama',
                     'p.nip_baru',
                     'k.nama as kh_nama',
                     'g.golru as golru_display',
                     'j.jabatan_nama',
-                    'j.unor_nama',
+                    'u.nama as unor_nama',
 
                     DB::raw("
                     CASE
