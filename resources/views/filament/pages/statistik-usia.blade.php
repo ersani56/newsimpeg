@@ -249,15 +249,15 @@
                                 <!-- PNS -->
                                 <th>L</th>
                                 <th>P</th>
-                                <th>Total</th>
+                                <th>Jml</th>
                                 <!-- PPPK -->
                                 <th>L</th>
                                 <th>P</th>
-                                <th>Total</th>
+                                <th>Jml</th>
                                 <!-- PPPK Paruh Waktu -->
                                 <th>L</th>
                                 <th>P</th>
-                                <th>Total</th>
+                                <th>Jml</th>
                             </tr>
                         </thead>
                         <tbody>

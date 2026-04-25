@@ -47,9 +47,9 @@
                         <th rowspan="2">Total</th>
                     </tr>
                     <tr>
-                        <th>L</th> <th>P</th> <th>Total</th>
-                        <th>L</th> <th>P</th> <th>Total</th>
-                        <th>L</th> <th>P</th> <th>Total</th>
+                        <th>L</th> <th>P</th> <th>Jml</th>
+                        <th>L</th> <th>P</th> <th>Jml</th>
+                        <th>L</th> <th>P</th> <th>Jml</th>
                     </tr>
                 </thead>
                 <tbody>

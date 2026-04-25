@@ -151,9 +151,9 @@
                 <th rowspan="2" width="10%">TOTAL</th>
             </tr>
             <tr>
-                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-blue">T</th>
-                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-green">T</th>
-                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-purple">T</th>
+                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-blue">Jml</th>
+                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-green">Jml</th>
+                <th width="7%">L</th> <th width="7%">P</th> <th width="8%" class="bg-purple">Jml</th>
             </tr>
         </thead>
         <tbody>

@@ -22,9 +22,9 @@ class StatistikPend extends Page
 
     public function mount()
     {
-        // Ganti 'pendidikan_nama' dengan nama kolom tingkat pendidikan di tabel Anda (misal: S1, D3, SMA)
         $this->data = DB::table('staging_import')
             ->selectRaw("
+                tingkat_pendidikan_id,
                 tingkat_pendidikan_nama as pendidikan,
                 SUM(CASE WHEN kedudukan_hukum_id IN ('01', '02', '03', '13', '15', '04') AND LOWER(jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pns_l,
                 SUM(CASE WHEN kedudukan_hukum_id IN ('01', '02', '03', '13', '15', '04') AND LOWER(jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pns_p,
@@ -33,10 +33,12 @@ class StatistikPend extends Page
                 SUM(CASE WHEN kedudukan_hukum_id = '101' AND LOWER(jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pppk_pw_l,
                 SUM(CASE WHEN kedudukan_hukum_id = '101' AND LOWER(jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pppk_pw_p
             ")
-            ->groupBy('tingkat_pendidikan_nama')
+            ->groupBy('tingkat_pendidikan_id', 'tingkat_pendidikan_nama')
+            ->orderBy('tingkat_pendidikan_id')
             ->get()
             ->toArray();
     }
+
 
     public function exportPdf()
     {

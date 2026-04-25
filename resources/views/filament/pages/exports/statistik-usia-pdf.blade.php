@@ -156,13 +156,13 @@
             <tr>
                 <th width="6%">L</th>
                 <th width="6%">P</th>
-                <th width="6%">Total</th>
+                <th width="6%">Jml</th>
                 <th width="6%">L</th>
                 <th width="6%">P</th>
-                <th width="6%">Total</th>
+                <th width="6%">Jml</th>
                 <th width="6%">L</th>
                 <th width="6%">P</th>
-                <th width="6%">Total</th>
+                <th width="6%">Jml</th>
             </tr>
         </thead>
         <tbody>

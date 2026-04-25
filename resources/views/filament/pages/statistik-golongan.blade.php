@@ -365,13 +365,13 @@
                 <tr>
                     <th>L</th>
                     <th>P</th>
-                    <th>Total</th>
+                    <th>Jml</th>
                     <th>L</th>
                     <th>P</th>
-                    <th>Total</th>
+                    <th>Jml</th>
                     <th>L</th>
                     <th>P</th>
-                    <th>Total</th>
+                    <th>Jml</th>
                 </tr>
             </thead>
 
@@ -417,7 +417,7 @@
                             @else
                                 <span class="text-blue-700">👔 {{ $displayGolongan }}</span>
                             @endif
-                         </td>
+                        </td>
 
                         <!-- PNS -->
                         <td class="{{ $row->pns_l > 0 ? 'font-semibold' : '' }}">{{ number_format($row->pns_l) }}</td>
