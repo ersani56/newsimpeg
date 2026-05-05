@@ -9,6 +9,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -22,6 +23,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 
@@ -200,7 +202,107 @@ class PegawaiResource extends Resource
         ])
         ->headerActions([
 
-            // ========================
+            Action::make('importCsvStaging')
+                ->label('Import CSV')
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('primary')
+                ->form([
+                    FileUpload::make('file')
+                        ->label('File CSV')
+                        ->disk('local')
+                        ->directory('imports/staging')
+                        ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel'])
+                        ->required(),
+                ])
+                ->action(function (array $data) {
+                    $columns = [
+                        'pns_id', 'nip_baru', 'nip_lama', 'nama', 'gelar_depan', 'gelar_belakang',
+                        'tempat_lahir_id', 'tempat_lahir_nama', 'tanggal_lahir', 'jenis_kelamin',
+                        'agama_id', 'agama_nama', 'jenis_kawin_id', 'jenis_kawin_nama', 'nik',
+                        'nomor_hp', 'email', 'email_gov', 'alamat', 'npwp_nomor', 'bpjs',
+                        'jenis_pegawai_id', 'jenis_pegawai_nama', 'kedudukan_hukum_id',
+                        'kedudukan_hukum_nama', 'status_cpns_pns', 'kartu_asn_virtual',
+                        'nomor_sk_cpns', 'tanggal_sk_cpns', 'tmt_cpns', 'nomor_sk_pns',
+                        'tanggal_sk_pns', 'tmt_pns', 'gol_awal_id', 'gol_awal_nama',
+                        'gol_akhir_id', 'gol_akhir_nama', 'tmt_golongan', 'mk_tahun', 'mk_bulan',
+                        'jenis_jabatan_id', 'jenis_jabatan_nama', 'jabatan_id', 'jabatan_nama',
+                        'tmt_jabatan', 'tingkat_pendidikan_id', 'tingkat_pendidikan_nama',
+                        'pendidikan_id', 'pendidikan_nama', 'tahun_lulus', 'kpkn_id', 'kpkn_nama',
+                        'lokasi_kerja_id', 'lokasi_kerja_nama', 'unor_id',
+                    ];
+
+                    $path = Storage::disk('local')->path($data['file']);
+                    $handle = fopen($path, 'r');
+
+                    $firstLine = fgets($handle);
+                    $delimiter = '|';
+
+                    $headers = array_map(
+                        fn ($header) => Str::of($header)
+                            ->replace("\xEF\xBB\xBF", '')
+                            ->trim()
+                            ->lower()
+                            ->replaceMatches('/[^a-z0-9]+/', '_')
+                            ->trim('_')
+                            ->toString(),
+                        str_getcsv($firstLine, $delimiter)
+                    );
+
+
+                    $missingColumns = array_diff($columns, $headers);
+
+                    if (! empty($missingColumns)) {
+                        fclose($handle);
+
+                        Notification::make()
+                            ->title('Import gagal')
+                            ->body('Kolom CSV tidak lengkap: ' . implode(', ', $missingColumns))
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $indexes = array_flip($headers);
+                    $rows = [];
+                    $imported = 0;
+
+                    while (($csvRow = fgetcsv($handle, 0, $delimiter)) !== false) {
+                        $row = [];
+
+                        foreach ($columns as $column) {
+                            $value = $csvRow[$indexes[$column]] ?? null;
+                            $value = is_string($value) ? trim($value) : $value;
+                            $value = is_string($value) ? ltrim($value, "'") : $value;
+
+                            $row[$column] = $value === '' ? null : $value;
+                        }
+
+                        $rows[] = $row;
+
+                        if (count($rows) >= 500) {
+                            DB::table('staging_import')->insert($rows);
+                            $imported += count($rows);
+                            $rows = [];
+                        }
+                    }
+
+                    if (! empty($rows)) {
+                        DB::table('staging_import')->insert($rows);
+                        $imported += count($rows);
+                    }
+
+                    fclose($handle);
+
+                    Notification::make()
+                        ->title('CSV berhasil diimport')
+                        ->body($imported . ' baris masuk ke staging_import.')
+                        ->success()
+                        ->send();
+                }),
+
+
+           // ========================
             // 1. CLEAR STAGING
             // ========================
             Action::make('clearStaging')
