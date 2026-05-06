@@ -10,6 +10,7 @@ class RiwayatPangkat extends Model
 
     protected $fillable = [
         'pns_id',
+        'nip',
         'golongan_id',
         'tmt_golongan',
         'mk_tahun',

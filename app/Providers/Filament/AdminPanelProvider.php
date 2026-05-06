@@ -11,8 +11,6 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -57,16 +55,23 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationGroups([
+                'Dashboard', // Grup untuk halaman dashboard
+                'Data Pegawai',
+                'Data Riwayat',
+                'Statisik',
+                'Tabel Referensi',
                 NavigationGroup::make()
-                    ->label('Statistik')
+                    ->label('Data Pegawai')
                     ->collapsed(), // Ini yang membuatnya tertutup secara default
                 NavigationGroup::make()
-                    ->label('Tabel Refensi')
+                    ->label('Data Riwayat')
                     ->collapsed(),
                 NavigationGroup::make()
-                    ->label('Daftar Pejabat')
+                    ->label('Statisik')
                     ->collapsed(),
-
+                NavigationGroup::make()
+                    ->label('Tabel Referensi')
+                    ->collapsed(),
             ]);
     }
 }

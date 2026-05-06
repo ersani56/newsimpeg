@@ -13,7 +13,8 @@ class DaftarPegawaiFungsional extends Page
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Fungsional & Pelaksana';
     protected static ?string $title = 'Daftar Pegawai Fungsional & Pelaksana';
-    protected static string|UnitEnum|null $navigationGroup = 'Daftar Pegawai';
+    protected static string|UnitEnum|null $navigationGroup = 'Data Pegawai';
+    protected static ?int $navigationSort = 20;
 
     protected string $view = 'filament.pages.daftar-pegawai-fungsional';
 

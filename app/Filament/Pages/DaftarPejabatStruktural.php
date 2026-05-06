@@ -14,8 +14,8 @@ class DaftarPejabatStruktural extends Page
     protected static ?string $navigationLabel = 'Struktural';
     protected string $view = 'filament.pages.daftar-pejabat-struktural';
     protected static ?string $title = 'Daftar Pejabat Struktural';
-    protected static string|UnitEnum|null $navigationGroup = 'Daftar Pegawai'; // Atau grup lain sesuai keinginan Anda
-    protected static ?int $navigationSort = 1;
+    protected static string|UnitEnum|null $navigationGroup = 'Data Pegawai'; // Atau grup lain sesuai keinginan Anda
+    protected static ?int $navigationSort = 30;
 public $filterEselon = 'semua';
 
     public function getPejabatProperty()

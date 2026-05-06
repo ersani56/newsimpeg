@@ -6,6 +6,7 @@ use App\Filament\Resources\PegawaiResource\Pages\ViewPegawai;
 use App\Filament\Resources\Pegawais\Pages\ListPegawais;
 use App\Models\Pegawai;
 use BackedEnum;
+use UnitEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -35,7 +36,10 @@ class PegawaiResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Pegawai';
     protected static ?string $modelLabel = 'Pegawai';
-    protected static ?string $pluralModelLabel = 'Data Pegawai';
+    protected static ?string $pluralModelLabel = 'Pegawai';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Data Pegawai';
+    protected static ?int $navigationSort = 10;
     public static function form(Schema $schema): Schema
     {
         return $schema
