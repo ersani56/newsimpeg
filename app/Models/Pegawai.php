@@ -60,11 +60,6 @@ class Pegawai extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function jenisPegawai()
-    {
-        return $this->belongsTo(JenisPegawai::class);
-    }
-
     public function kedudukanHukum() {
         return $this->belongsTo(KedudukanHukum::class, 'kedudukan_hukum_id');
     }

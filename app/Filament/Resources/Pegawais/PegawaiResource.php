@@ -183,7 +183,8 @@ class PegawaiResource extends Resource
                 }),
             TextColumn::make('kedudukanHukum.nama')
                 ->label('KEDUDUKAN HUKUM')
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             TextColumn::make('nik')
                 ->label('NIK')
                 ->searchable()
