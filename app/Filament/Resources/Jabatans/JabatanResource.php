@@ -102,11 +102,11 @@ class JabatanResource extends Resource
                 ->label('ID Jabatan')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('jenis_jabatan_id')
-                ->label('ID Jabatan')
+            TextColumn::make('kel_jab')
+                ->label('Kelompok Jabatan')
                 ->searchable()
                 ->sortable(),
-            TextColumn::make('unor_id')
+            TextColumn::make('unor_nama')
                 ->label('Unit Organisasi')
                 ->searchable()
                 ->sortable(),
@@ -118,10 +118,21 @@ class JabatanResource extends Resource
                 ->label('Eselon')
                 ->searchable()
                 ->sortable(),
+            TextColumn::make('bup')
+                ->label('BUP')
+                ->searchable()
+                ->sortable(),
+            TextColumn::make('jenjang')
+                ->label('Jenjang')
+                ->searchable()
+                ->sortable(),
             TextColumn::make('created_at')
                 ->label('Dibuat')
                 ->dateTime('d M Y H:i')
                 ->sortable(),
+        ])
+        ->actions([
+            EditAction::make(),
         ]);
     }
 

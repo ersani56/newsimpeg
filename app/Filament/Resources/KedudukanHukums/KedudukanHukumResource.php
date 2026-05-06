@@ -32,6 +32,9 @@ class KedudukanHukumResource extends Resource
     {
             return $schema
             ->components([
+                TextInput::make('kedudukan_hukum_id')
+                    ->label('ID Kedudukan Hukum')
+                    ->required(),
                 TextInput::make('nama')
                     ->label('Kedudukan Hukum Pegawai')
                     ->required()
@@ -45,6 +48,11 @@ class KedudukanHukumResource extends Resource
     {
             return $table
         ->columns([
+            TextColumn::make('kedudukan_hukum_id')
+                ->label('ID')
+                ->searchable()
+                ->sortable(),
+
             TextColumn::make('nama')
                 ->label('Kedudukan Hukum Pegawai')
                 ->searchable()
@@ -56,7 +64,6 @@ class KedudukanHukumResource extends Resource
         ])
         ->actions([
             EditAction::make(),
-            DeleteAction::make(),
         ]);
     }
 

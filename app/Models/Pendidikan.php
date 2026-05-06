@@ -6,11 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pendidikan extends Model
 {
+    protected $table = 'pendidikans';
+
+    protected $primaryKey = 'pendidikan_id';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
     protected $fillable = [
+        'pendidikan_id',
+        'tingkat_pendidikan_id',
         'nama',
     ];
-    public function pegawai()
+
+    public function tingkatPendidikan()
     {
-        return $this->belongsTo(Pegawai::class, 'pns_id', 'pns_id');
+        return $this->belongsTo(
+            TingkatPendidikan::class,
+            'tingkat_pendidikan_id',
+            'tingkat_pendidikan_id'
+        );
     }
 }

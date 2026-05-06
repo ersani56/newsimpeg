@@ -23,7 +23,7 @@ class Pegawai extends Model
 
     public function pendidikan()
     {
-        return $this->belongsTo(Pendidikan::class, 'pend_id','pendidikan_id');
+        return $this->belongsTo(Pendidikan::class, 'pendidikan_id','pendidikan_id');
     }
 
     public function jabatan()

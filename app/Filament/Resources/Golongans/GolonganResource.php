@@ -9,8 +9,10 @@ use App\Models\Golongan;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -28,18 +30,60 @@ class GolonganResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-            return $schema
+        return $schema
             ->components([
-                TextInput::make('golru')
+                Select::make('golru')
+                    ->options([
+                        'I/a' => 'I/a',
+                        'I/b' => 'I/b',
+                        'I/c' => 'I/c',
+                        'I/d' => 'I/d',
+                        'II/a' => 'II/a',
+                        'II/b' => 'II/b',
+                        'II/c' => 'II/c',
+                        'II/d' => 'II/d',
+                        'III/a' => 'III/a',
+                        'III/b' => 'III/b',
+                        'III/c' => 'III/c',
+                        'III/d' => 'III/d',
+                        'IV/a' => 'IV/a',
+                        'IV/b' => 'IV/b',
+                        'IV/c' => 'IV/c',
+                        'IV/d' => 'IV/d',
+                        'IV/e' => 'IV/e',
+                    ])
                     ->label('Golongan Ruang')
                     ->required()
-                    ->maxLength(10)
+                    ->live()
+                    ->afterStateUpdated(function (?string $state, Set $set) {
+                        $pangkat = [
+                            'I/a' => 'Juru Muda',
+                            'I/b' => 'Juru Muda Tingkat I',
+                            'I/c' => 'Juru',
+                            'I/d' => 'Juru Tingkat I',
+                            'II/a' => 'Pengatur Muda',
+                            'II/b' => 'Pengatur Muda Tingkat I',
+                            'II/c' => 'Pengatur',
+                            'II/d' => 'Pengatur Tingkat I',
+                            'III/a' => 'Penata Muda',
+                            'III/b' => 'Penata Muda Tingkat I',
+                            'III/c' => 'Penata',
+                            'III/d' => 'Penata Tingkat I',
+                            'IV/a' => 'Pembina',
+                            'IV/b' => 'Pembina Tingkat I',
+                            'IV/c' => 'Pembina Utama Muda',
+                            'IV/d' => 'Pembina Utama Madya',
+                            'IV/e' => 'Pembina Utama',
+                        ];
+                        $set('pangkat', $pangkat[$state] ?? null);
+                    })
                     ->unique(ignoreRecord: true),
+
                 TextInput::make('pangkat')
                     ->label('Pangkat')
                     ->required()
-                    ->maxLength(50)
-                    ->unique(ignoreRecord: true),
+                    ->disabled()
+                    ->dehydrated(),
             ]);
     }
 
@@ -63,7 +107,6 @@ class GolonganResource extends Resource
         ])
         ->actions([
             EditAction::make(),
-            DeleteAction::make(),
         ]);
     }
 

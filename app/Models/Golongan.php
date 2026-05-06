@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Golongan extends Model
 {
     protected $table = 'golongans';
-    protected $primaryKey = 'gol_id';
+    protected $primaryKey = 'golongan_id';
     public $incrementing = false;
     protected $fillable = [
         'golru',
