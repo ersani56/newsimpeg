@@ -390,6 +390,14 @@ class PegawaiResource extends Resource
                         ]
                     );
                 }
+                DB::table('pegawais')
+                    ->whereNotNull('pns_id')
+                    ->whereNotIn('pns_id', function ($query) {
+                        $query->select('pns_id')
+                            ->from('staging_import')
+                            ->whereNotNull('pns_id');
+                    })
+                    ->delete();
 
                 Notification::make()
                     ->title('Pegawai berhasil disinkron')
