@@ -11,7 +11,7 @@ use UnitEnum;
 class DaftarPejabatStruktural extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-identification';
-    protected static ?string $navigationLabel = 'Struktural';
+    protected static ?string $navigationLabel = 'Pejabat Struktural';
     protected string $view = 'filament.pages.daftar-pejabat-struktural';
     protected static ?string $title = 'Daftar Pejabat Struktural';
     protected static string|UnitEnum|null $navigationGroup = 'Data Pegawai'; // Atau grup lain sesuai keinginan Anda

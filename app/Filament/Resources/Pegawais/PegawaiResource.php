@@ -6,7 +6,7 @@ use App\Filament\Resources\PegawaiResource\Pages\ViewPegawai;
 use App\Filament\Resources\Pegawais\Pages\ListPegawais;
 use App\Models\Pegawai;
 use BackedEnum;
-use UnitEnum;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -26,6 +26,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use UnitEnum;
 
 
 class PegawaiResource extends Resource
@@ -47,9 +48,9 @@ class PegawaiResource extends Resource
                 Tabs::make('Data Pegawai')
                     ->tabs([
 
-                        Tab::make('Data Pribadi')
+                        Tab::make('Data Pokok Pegawai')
                             ->schema([
-                                Grid::make(3)
+                                Grid::make(2)
                                     ->schema([
                                         TextInput::make('nip_baru')
                                             ->label('NIP')
@@ -59,57 +60,41 @@ class PegawaiResource extends Resource
                                             ->required(),
                                         TextInput::make('gelar_depan'),
                                         TextInput::make('gelar_belakang'),
-                                        TextInput::make('kedudukan_hukum_nama')
-                                            ->label('Jenis Pegawai')
-                                            ->disabled(),
-                                        Select::make('jenis_kelamin')
-                                            ->options([
-                                                'L' => 'Laki-laki',
-                                                'P' => 'Perempuan',
-                                            ]),
-                                        TextInput::make('nik'),
-
-                                        TextInput::make('tempat_lahir'),
-
-                                        DatePicker::make('tanggal_lahir'),
-
-                                        Select::make('agama_id')
-                                            ->relationship('agama','nama')
-                                            ->searchable(),
-                                    ])
-                            ])
-                            ->columnSpanFull(),
-
-                        Tab::make('Kepegawaian')
-                            ->schema([
-                                Grid::make(3)
-                                    ->schema([
                                         Select::make('kedudukan_hukum_id')
                                             ->relationship('kedudukanHukum','nama')
-                                            ->searchable(),
+                                            ->label('Kedudukan Hukum'),
 
-                                        Select::make('golongan_id')
-                                            ->relationship('golongan','nama')
-                                            ->searchable(),
-
-                                        Select::make('jabatan_id')
-                                            ->relationship('jabatan','nama')
-                                            ->searchable(),
-
-                                        Select::make('unit_kerja_id')
-                                            ->relationship('unitKerja','nama')
-                                            ->searchable(),
-
-                                        DatePicker::make('tmt_cpns')
-                                            ->label('TMT CPNS'),
-
-                                        DatePicker::make('tmt_pns')
-                                            ->label('TMT PNS'),
+                                        Select::make('jenis_kelamin')
+                                            ->options([
+                                                'm' => 'Laki-laki',
+                                                'f' => 'Perempuan',
+                                            ]),
+                                        TextInput::make('nik'),
+                                        DatePicker::make('tanggal_lahir'),
+                                        Select::make('agama_id')
+                                            ->relationship('agama','nama'),
                                     ])
                             ])
                             ->columnSpanFull(),
 
-                        Tab::make('Pendidikan')
+                        Tab::make('Pangakat')
+                            ->schema([
+                                Grid::make(2)
+                                    ->schema([
+                                        Select::make('golongan_id')
+                                            ->relationship('Golongan','golru'),
+
+                                        Select::make('golongan_id')
+                                            ->relationship('Golongan','pangkat'),
+
+                                        DatePicker::make('Golongan.tmt_golongan')
+                                            ->label('TMT Golongan'),
+
+                                    ])
+                            ])
+                            ->columnSpanFull(),
+
+                        Tab::make('Jabatan')
                             ->schema([
                                 Grid::make(3)
                                     ->schema([
@@ -126,7 +111,7 @@ class PegawaiResource extends Resource
                             ])
                             ->columnSpanFull(),
 
-                        Tab::make('Kontak')
+                        Tab::make('Pendidikan')
                             ->schema([
                                 Grid::make(3)
                                     ->schema([
@@ -205,8 +190,8 @@ class PegawaiResource extends Resource
         ->actions([
             EditAction::make(),
         ])
-        ->headerActions([
 
+        ->headerActions([
             Action::make('importCsvStaging')
                 ->label('Import CSV')
                 ->icon('heroicon-o-arrow-up-tray')
@@ -351,7 +336,7 @@ class PegawaiResource extends Resource
                         'agama_id' => $row->agama_id ? (int) $row->agama_id : null,
                         'golongan_id' => trim($row->gol_akhir_id),
                         'jabatan_id' => $row->jabatan_id,
-                        'pend_id' => $row->pendidikan_id,
+                        'pendidikan_id' => $row->pendidikan_id,
                         'unor_id' => $row->unor_id,
                         'jenis_kawin_id' => $row->jenis_kawin_id ? (int) $row->jenis_kawin_id : null,
 
@@ -398,7 +383,7 @@ class PegawaiResource extends Resource
                             'nama',
                             'jabatan_id',
                             'golongan_id',
-                            'pend_id',
+                            'pendidikan_id',
                             'unor_id',
                             'kedudukan_hukum_id',
                             'updated_at'
@@ -411,6 +396,43 @@ class PegawaiResource extends Resource
                     ->success()
                     ->send();
             }),
+            Action::make('exportPdf')
+                ->label('Export PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('info')
+                ->action(function (ListPegawais $livewire) {
+                    $data = $livewire->getTableQueryForExport()
+                        ->with(['kedudukanHukum', 'agama', 'pendidikan', 'jabatan'])
+                        ->get()
+                        ->map(function (Pegawai $pegawai) {
+                            return (object) [
+                                'nip_baru' => $pegawai->nip_baru ?: '-',
+                                'nama_lengkap' => trim(
+                                    ($pegawai->gelar_depan ? $pegawai->gelar_depan . ' ' : '') .
+                                    ($pegawai->nama ?: '-') .
+                                    ($pegawai->gelar_belakang ? ', ' . $pegawai->gelar_belakang : '')
+                                ),
+                                'kedudukan_hukum' => $pegawai->kedudukanHukum?->nama ?: '-',
+                                'nik' => $pegawai->nik ?: '-',
+                                'agama' => $pegawai->agama?->nama ?: '-',
+                                'pendidikan' => $pegawai->pendidikan?->nama ?: '-',
+                                'jabatan' => $pegawai->jabatan?->jabatan_nama ?: '-',
+                            ];
+                        });
+
+                    $pdf = Pdf::loadView('filament.pages.exports.pegawai-pdf', [
+                        'data' => $data,
+                        'date' => now()->translatedFormat('d F Y H:i'),
+                        'search' => $livewire->getTableSearch() ?: '-',
+                        'total' => $data->count(),
+                    ]);
+
+                    $pdf->setPaper('folio', 'landscape');
+
+                    return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->output();
+                    }, 'daftar-pegawai-' . now()->format('Y-m-d_H-i-s') . '.pdf');
+                }),
             // ========================
             // 3. SINKRON JABATAN (WAJIB)
             // ========================
