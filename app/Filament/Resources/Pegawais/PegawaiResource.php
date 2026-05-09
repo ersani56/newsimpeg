@@ -218,7 +218,11 @@ class PegawaiResource extends Resource
                         'jenis_jabatan_id', 'jenis_jabatan_nama', 'jabatan_id', 'jabatan_nama',
                         'tmt_jabatan', 'tingkat_pendidikan_id', 'tingkat_pendidikan_nama',
                         'pendidikan_id', 'pendidikan_nama', 'tahun_lulus', 'kpkn_id', 'kpkn_nama',
-                        'lokasi_kerja_id', 'lokasi_kerja_nama', 'unor_id',
+                        'lokasi_kerja_id', 'lokasi_kerja_nama', 'unor_id','lokasi_kerja_id',
+                        'lokasi_kerja_nama', 'unor_id', 'unor_nama', 'instansi_induk_id', 'instansi_induk_nama',
+                        'instansi_kerja_id', 'instansi_kerja_nama','instansi_kerja_id','instansi_kerja_nama',
+                        'satuan_kerja_induk_id', 'satuan_kerja_induk_nama', 'satuan_kerja_kerja_id', 'satuan_kerja_kerja_nama',
+                        'is_valid_nik','nama_sekolah', 'flag_ikd',
                     ];
 
                     $path = Storage::disk('local')->path($data['file']);
