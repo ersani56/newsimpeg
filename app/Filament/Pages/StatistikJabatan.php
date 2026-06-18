@@ -30,8 +30,12 @@ class StatistikJabatan extends Page
             $query = DB::table('pegawais as p')
                 // Gunakan LEFT JOIN agar jika jabatan tidak ditemukan, pegawai tetap terhitung
                 ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
+                ->leftJoin('staging_import as s', 'p.pns_id', '=', 's.pns_id')
                 ->selectRaw("
                     CASE
+                        WHEN (j.kel_jab IS NULL OR TRIM(j.kel_jab) = '')
+                            AND s.jenis_jabatan_id = '4'
+                        THEN 'pelaksana'
                         WHEN j.kel_jab IS NULL THEN 'Belum Dikategorikan'
 
                         WHEN LOWER(j.kel_jab) IN ('jf guru', 'jf kesehatan', 'jf lainnya') THEN j.kel_jab
