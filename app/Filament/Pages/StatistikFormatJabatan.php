@@ -18,11 +18,19 @@ class StatistikFormatJabatan extends Page
 
     protected string $view = 'filament.pages.statistik-format-jabatan';
 
-    public string $jenisPegawai = 'pns';
-
-    public function getDataProperty()
+    public function getPnsDataProperty()
     {
-        return $this->baseQuery()
+        return $this->getDataForJenisPegawai('pns');
+    }
+
+    public function getPppkDataProperty()
+    {
+        return $this->getDataForJenisPegawai('pppk');
+    }
+
+    protected function getDataForJenisPegawai(string $jenisPegawai)
+    {
+        return $this->baseQuery($jenisPegawai)
             ->groupBy('s.gol_akhir_nama')
             ->orderByRaw("
                 FIELD(
@@ -38,14 +46,7 @@ class StatistikFormatJabatan extends Page
             ->get();
     }
 
-    public function getJudulJenisPegawaiProperty(): string
-    {
-        return $this->jenisPegawai === 'pppk'
-            ? 'PPPK Penuh Waktu'
-            : 'PNS';
-    }
-
-    protected function baseQuery()
+    protected function baseQuery(string $jenisPegawai)
     {
         $query = DB::table('staging_import as s')
             ->leftJoin('jabatans as j', 's.jabatan_id', '=', 'j.jabatan_id')
@@ -111,7 +112,7 @@ class StatistikFormatJabatan extends Page
                 END) AS pelaksana
             ");
 
-        if ($this->jenisPegawai === 'pppk') {
+        if ($jenisPegawai === 'pppk') {
             return $query->where('s.kedudukan_hukum_id', '71');
         }
 
@@ -120,11 +121,9 @@ class StatistikFormatJabatan extends Page
 
     public function exportPdf()
     {
-        $data = $this->data;
-
         $pdf = Pdf::loadView('filament.pages.exports.statistik-format-jabatan-pdf', [
-            'data' => $data,
-            'jenisPegawai' => $this->judulJenisPegawai,
+            'pnsData' => $this->pnsData,
+            'pppkData' => $this->pppkData,
             'date' => now()->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i'),
         ]);
 
@@ -132,6 +131,6 @@ class StatistikFormatJabatan extends Page
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
-        }, 'statistik-format-jabatan-' . $this->jenisPegawai . '-' . now()->format('Y-m-d_H-i-s') . '.pdf');
+        }, 'statistik-format-jabatan-' . now()->format('Y-m-d_H-i-s') . '.pdf');
     }
 }
