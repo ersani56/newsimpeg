@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class Pegawai extends Model
 {
 
-    protected $fillable = [
-        'nip',
-        'nama',
-        'agama_id',
-        'pendidikan_id',
-        'jabatan_id',
-        'unit_kerja_id',
+    protected $guarded = [];
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'tmt_cpns' => 'date',
+        'tanggal_sk_cpns' => 'date',
+        'tanggal_sk_pns' => 'date',
+        'tmt_golongan' => 'date',
+        'tmt_jabatan' => 'date',
     ];
 
     public function agama()
@@ -65,5 +67,3 @@ class Pegawai extends Model
     }
 
 }
-
-

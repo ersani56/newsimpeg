@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Pegawais;
 
 use App\Filament\Resources\PegawaiResource\Pages\ViewPegawai;
 use App\Filament\Resources\Pegawais\Pages\ListPegawais;
+use App\Filament\Resources\Pegawais\Pages\EditPegawai;
 use App\Models\Pegawai;
 use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -47,7 +48,6 @@ class PegawaiResource extends Resource
             ->components([
                 Tabs::make('Data Pegawai')
                     ->tabs([
-
                         Tab::make('Data Pokok Pegawai')
                             ->schema([
                                 Grid::make(2)
@@ -63,7 +63,6 @@ class PegawaiResource extends Resource
                                         Select::make('kedudukan_hukum_id')
                                             ->relationship('kedudukanHukum','nama')
                                             ->label('Kedudukan Hukum'),
-
                                         Select::make('jenis_kelamin')
                                             ->options([
                                                 'm' => 'Laki-laki',
@@ -77,19 +76,36 @@ class PegawaiResource extends Resource
                             ])
                             ->columnSpanFull(),
 
-                        Tab::make('Pangakat')
+                        Tab::make('Pangkat')
                             ->schema([
                                 Grid::make(2)
                                     ->schema([
-                                        Select::make('golongan_id')
-                                            ->relationship('Golongan','golru'),
-
-                                        Select::make('golongan_id')
-                                            ->relationship('Golongan','pangkat'),
-
-                                        DatePicker::make('Golongan.tmt_golongan')
+                                        Select::make('golongan_nama')
+                                            ->label('Golongan/Ruang atau Jenjang PPPK')
+                                            ->options(fn (): array => DB::table('staging_import')
+                                                ->whereNotNull('gol_akhir_nama')
+                                                ->where('gol_akhir_nama', '<>', '')
+                                                ->distinct()
+                                                ->orderBy('gol_akhir_nama')
+                                                ->pluck('gol_akhir_nama', 'gol_akhir_nama')
+                                                ->all())
+                                            ->searchable()
+                                            ->preload(),
+                                        TextInput::make('pangkat_nama')
+                                            ->label('Pangkat')
+                                            ->disabled()
+                                            ->dehydrated(false),
+                                        DatePicker::make('tmt_golongan')
                                             ->label('TMT Golongan'),
-
+                                        TextInput::make('mk_tahun')
+                                            ->label('Masa Kerja Tahun')
+                                            ->numeric()
+                                            ->minValue(0),
+                                        TextInput::make('mk_bulan')
+                                            ->label('Masa Kerja Bulan')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->maxValue(11),
                                     ])
                             ])
                             ->columnSpanFull(),
@@ -98,15 +114,32 @@ class PegawaiResource extends Resource
                             ->schema([
                                 Grid::make(3)
                                     ->schema([
-                                        Select::make('pendidikan_id')
-                                            ->relationship('pendidikan','nama')
-                                            ->searchable(),
-
-                                        TextInput::make('nama_sekolah'),
-
-                                        TextInput::make('jurusan'),
-
-                                        TextInput::make('tahun_lulus'),
+                                        Select::make('jabatan_id')
+                                            ->label('Nama Jabatan')
+                                            ->relationship('jabatan', 'jabatan_nama')
+                                            ->searchable()
+                                            ->preload(false),
+                                        Select::make('jenis_jabatan_id')
+                                            ->label('Jenis Jabatan')
+                                            ->options([
+                                                '1' => 'Jabatan Struktural',
+                                                '2' => 'Jabatan Fungsional',
+                                                '4' => 'Jabatan Pelaksana',
+                                            ]),
+                                        Select::make('jabatan_eselon')
+                                            ->label('Eselon')
+                                            ->options([
+                                                'I/a' => 'I/a', 'I/b' => 'I/b',
+                                                'II/a' => 'II/a', 'II/b' => 'II/b',
+                                                'III/a' => 'III/a', 'III/b' => 'III/b',
+                                                'IV/a' => 'IV/a', 'IV/b' => 'IV/b',
+                                            ])
+                                            ->placeholder('Non Eselon'),
+                                        TextInput::make('jabatan_jenjang')
+                                            ->label('Jenjang Jabatan')
+                                            ->placeholder('Utama, Madya, Muda, Pertama, dan seterusnya'),
+                                        DatePicker::make('tmt_jabatan')
+                                            ->label('TMT Jabatan'),
                                     ])
                             ])
                             ->columnSpanFull(),
@@ -115,10 +148,35 @@ class PegawaiResource extends Resource
                             ->schema([
                                 Grid::make(3)
                                     ->schema([
+                                        Select::make('pendidikan_id')
+                                            ->label('Program/Jurusan Pendidikan')
+                                            ->relationship('pendidikan', 'nama')
+                                            ->searchable()
+                                            ->preload(false),
+                                        TextInput::make('tingkat_pendidikan_nama')
+                                            ->label('Tingkat Pendidikan')
+                                            ->disabled()
+                                            ->dehydrated(false),
+                                        TextInput::make('nama_sekolah')
+                                            ->label('Nama Sekolah/Perguruan Tinggi'),
+                                        TextInput::make('tahun_lulus')
+                                            ->label('Tahun Lulus')
+                                            ->numeric()
+                                            ->minValue(1900)
+                                            ->maxValue((int) date('Y')),
+                                    ])
+                            ])
+                            ->columnSpanFull(),
+
+                        Tab::make('Kontak')
+                            ->schema([
+                                Grid::make(3)
+                                    ->schema([
                                         TextInput::make('email')
                                             ->email(),
 
-                                        TextInput::make('no_hp'),
+                                        TextInput::make('nomor_hp')
+                                            ->label('Nomor HP'),
 
                                         Textarea::make('alamat')
                                             ->columnSpanFull(),
@@ -312,10 +370,17 @@ class PegawaiResource extends Resource
             ->label('Sinkron Pegawai')
             ->color('success')
             ->action(function () {
+                $referensiJabatan = DB::table('jabatans')
+                    ->select('jabatan_id', 'eselon', 'jenjang')
+                    ->get()
+                    ->keyBy('jabatan_id');
+
                 $data = DB::table('staging_import')
                 ->whereNotNull('pns_id')
                 ->get()
-                ->map(function ($row) {
+                ->map(function ($row) use ($referensiJabatan) {
+                    $jabatan = $referensiJabatan->get($row->jabatan_id);
+
                     return [
                         'pns_id' => $row->pns_id,
                         'nip_baru' => trim($row->nip_baru),
@@ -339,8 +404,24 @@ class PegawaiResource extends Resource
 
                         'agama_id' => $row->agama_id ? (int) $row->agama_id : null,
                         'golongan_id' => trim($row->gol_akhir_id),
+                        'golongan_nama' => $row->gol_akhir_nama,
+                        'pangkat_nama' => self::namaPangkat($row->gol_akhir_nama),
+                        'tmt_golongan' => self::parseTanggal($row->tmt_golongan),
+                        'mk_tahun' => $row->mk_tahun !== null && $row->mk_tahun !== '' ? (int) $row->mk_tahun : null,
+                        'mk_bulan' => $row->mk_bulan !== null && $row->mk_bulan !== '' ? (int) $row->mk_bulan : null,
                         'jabatan_id' => $row->jabatan_id,
+                        'jenis_jabatan_id' => $row->jenis_jabatan_id,
+                        'jenis_jabatan_nama' => $row->jenis_jabatan_nama,
+                        'jabatan_nama' => $row->jabatan_nama,
+                        'jabatan_eselon' => $jabatan?->eselon,
+                        'jabatan_jenjang' => $jabatan?->jenjang,
+                        'tmt_jabatan' => self::parseTanggal($row->tmt_jabatan),
                         'pendidikan_id' => $row->pendidikan_id,
+                        'pendidikan_nama' => $row->pendidikan_nama,
+                        'tingkat_pendidikan_id' => $row->tingkat_pendidikan_id,
+                        'tingkat_pendidikan_nama' => $row->tingkat_pendidikan_nama,
+                        'nama_sekolah' => $row->nama_sekolah,
+                        'tahun_lulus' => $row->tahun_lulus !== null && $row->tahun_lulus !== '' ? (int) $row->tahun_lulus : null,
                         'unor_id' => $row->unor_id,
                         'jenis_kawin_id' => $row->jenis_kawin_id ? (int) $row->jenis_kawin_id : null,
 
@@ -386,8 +467,24 @@ class PegawaiResource extends Resource
                             'nip_lama',
                             'nama',
                             'jabatan_id',
+                            'jenis_jabatan_id',
+                            'jenis_jabatan_nama',
+                            'jabatan_nama',
+                            'jabatan_eselon',
+                            'jabatan_jenjang',
+                            'tmt_jabatan',
                             'golongan_id',
+                            'golongan_nama',
+                            'pangkat_nama',
+                            'tmt_golongan',
+                            'mk_tahun',
+                            'mk_bulan',
                             'pendidikan_id',
+                            'pendidikan_nama',
+                            'tingkat_pendidikan_id',
+                            'tingkat_pendidikan_nama',
+                            'nama_sekolah',
+                            'tahun_lulus',
                             'unor_id',
                             'kedudukan_hukum_id',
                             'updated_at'
@@ -445,167 +542,6 @@ class PegawaiResource extends Resource
                         echo $pdf->output();
                     }, 'daftar-pegawai-' . now()->format('Y-m-d_H-i-s') . '.pdf');
                 }),
-            // ========================
-            // 3. SINKRON JABATAN (WAJIB)
-            // ========================
-            /* Action::make('sinkronRJabatan')
-            ->label('Sinkron RJabatan')
-            ->color('warning')
-            ->requiresConfirmation()
-            ->action(function () {
-
-                DB::table('r_jabatans')->truncate();
-
-                DB::statement("
-                    INSERT INTO r_jabatans (
-                        pegawai_id,
-                        jabatan_id,
-                        tmt_jabatan,
-                        created_at,
-                        updated_at
-                    )
-                    SELECT
-                        p.id,
-                        j.id,
-                        STR_TO_DATE(NULLIF(s.tmt_jabatan, ''), '%d-%m-%Y'),
-                        NOW(),
-                        NOW()
-                    FROM staging_import s
-                    JOIN pegawais p ON s.pns_id = p.pns_id
-                    LEFT JOIN jabatans j ON s.jabatan_id = j.id
-                    WHERE s.jabatan_id IS NOT NULL
-                ");
-                Notification::make()
-                    ->title('Jabatan berhasil disinkron')
-                    ->success()
-                    ->send();
-            }),
- */
-
-            // ========================
-            // 4. SINKRON PENDIDIKAN
-            // ========================
-/*          Action::make('sinkronRPendidikan')
-            ->label('Sinkron RPendidikan')
-            ->color('info')
-            ->requiresConfirmation()
-            ->action(function () {
-
-                DB::table('r_pends')->truncate();
-
-                DB::statement("
-                    INSERT INTO r_pends (
-                        pegawai_id,
-                        pendidikan_id,
-                        tingkat_pendidikan_id,
-                        nama_sekolah,
-                        tahun_lulus,
-                        created_at,
-                        updated_at
-                    )
-                    SELECT
-                        p.id,
-                        pend.id,
-                        tp.id,
-                        s.nama_sekolah,
-                        s.tahun_lulus,
-                        NOW(),
-                        NOW()
-                    FROM staging_import s
-                    JOIN pegawais p ON s.pns_id = p.pns_id
-                    LEFT JOIN pendidikans pend ON s.pendidikan_id = pend.id
-                    LEFT JOIN tingkat_pendidikans tp ON s.tingkat_pendidikan_id = tp.id
-                ");
-
-                Notification::make()
-                    ->title('Pendidikan berhasil disinkron')
-                    ->success()
-                    ->send();
-            }), */
-
-            /* Action::make('sinkronJabatan')
-                ->label('Sinkron Jabatan')
-                ->icon('heroicon-o-arrow-path')
-                ->color('primary')
-                ->action(function () {
-
-                    $rows = DB::table('staging_import')
-                        ->select('jabatan_id', 'unor_nama', 'jabatan_nama', 'unor_id')
-                        ->whereNotNull('jabatan_id')
-                        ->whereNotNull('jabatan_nama')
-                        ->distinct()
-                        ->get();
-
-                    $now = now();
-
-                    $data = $rows->map(function ($row) use ($now) {
-                        $nama = strtolower(trim(preg_replace('/\s+/', ' ', $row->jabatan_nama)));
-                        $unor_nama = strtolower(trim(preg_replace('/\s+/', ' ', $row->unor_nama ?? '')));
-
-                        // Catatan: Pastikan logika deteksi jenis ini sudah benar sesuai data staging Anda
-                        // Jika 'unor_id' adalah tipe jabatan, gunakan itu.
-                        $jenis = (int) $row->unor_id;
-
-                        // =========================
-                        // KELOMPOK JABATAN (kel_jab)
-                        // =========================
-                        $kel_jab = 'jf lainnya'; // Default
-
-                        if ($jenis === 1) {
-                            $kel_jab = 'struktural';
-                        } elseif ($jenis === 2) {
-                            if (str_contains($nama, 'guru')) {
-                                $kel_jab = 'jf guru';
-                            } elseif (preg_match('/dokter|dokter gigi|perawat|bidan|apoteker|psikolog|terapis|anestesi|epidemiolog|fisioterapis|nutrisionis|sanitasi|radiografer|laboratorium|perekam medis|okupasi|ortotis|teknisi|wicara|administrator kesehatan|entomolog/i', $nama)) {
-                                $kel_jab = 'jf kesehatan';
-                            } else {
-                                $kel_jab = 'jf lainnya';
-                            }
-                        } elseif ($jenis === 4) {
-                            $kel_jab = 'pelaksana';
-                        }
-
-                        // =========================
-                        // ESELON (Logika disingkat untuk efisiensi)
-                        // =========================
-                        $eselon = null;
-                        if ($jenis === 1) {
-                            if (str_contains($nama, 'sekretaris daerah')) $eselon = 'II/a';
-                            elseif (preg_match('/^(kepala dinas|kepala badan|inspektur|sekretaris dprd|staf ahli|asisten b|asisten p)/', $nama)) $eselon = 'II/b';
-                            elseif (preg_match('/camat/i', $nama)) $eselon = 'III/a';
-                            elseif (preg_match('/(kabid|kepala bidang|direktur rumah sakit)/i', $nama)) $eselon = 'III/b';
-                            elseif (preg_match('/(kasi|kepala seksi|kasubbid|lurah)/i', $nama)) $eselon = 'IV/a';
-                            elseif (preg_match('/(kasubbag|kepala sub bagian)/i', $nama)) $eselon = 'IV/a';
-                        }
-
-                        return [
-                            'jabatan_id'   => $row->jabatan_id,
-                            'jabatan_nama' => $row->jabatan_nama,
-                            'unor_nama'    => $row->unor_nama,
-                            'kel_jab'      => $kel_jab,
-                            'eselon'       => $eselon,
-                            // Kolom tambahan sesuai struktur tabel Anda
-                            'bup'          => null, // Tambahkan logika jika ada data BUP
-                            'jenjang'      => null, // Tambahkan logika jika ada data Jenjang
-                            'created_at'   => $now,
-                            'updated_at'   => $now,
-                        ];
-                    });
-
-                    // Upsert dengan kolom yang sesuai struktur
-                    $data->chunk(500)->each(function ($chunk) {
-                        DB::table('jabatans')->upsert(
-                            $chunk->toArray(),
-                            ['jabatan_id'], // Primary Key
-                            ['jabatan_nama', 'unor_nama', 'kel_jab', 'eselon', 'bup', 'jenjang', 'updated_at']
-                        );
-                    });
-
-                    Notification::make()
-                        ->title('Sinkronisasi Berhasil')
-                        ->success()
-                        ->send();
-                }), */
         ]);
     }
 
@@ -616,13 +552,56 @@ class PegawaiResource extends Resource
         ];
     }
 
+    public static function namaPangkat(?string $golongan): ?string
+    {
+        return [
+            'I/a' => 'Juru Muda',
+            'I/b' => 'Juru Muda Tingkat I',
+            'I/c' => 'Juru',
+            'I/d' => 'Juru Tingkat I',
+            'II/a' => 'Pengatur Muda',
+            'II/b' => 'Pengatur Muda Tingkat I',
+            'II/c' => 'Pengatur',
+            'II/d' => 'Pengatur Tingkat I',
+            'III/a' => 'Penata Muda',
+            'III/b' => 'Penata Muda Tingkat I',
+            'III/c' => 'Penata',
+            'III/d' => 'Penata Tingkat I',
+            'IV/a' => 'Pembina',
+            'IV/b' => 'Pembina Tingkat I',
+            'IV/c' => 'Pembina Utama Muda',
+            'IV/d' => 'Pembina Utama Madya',
+            'IV/e' => 'Pembina Utama',
+        ][$golongan] ?? null;
+    }
+
+    public static function parseTanggal(?string $tanggal): ?string
+    {
+        if (! $tanggal) {
+            return null;
+        }
+
+        foreach (['d-m-Y', 'd/m/Y', 'Y-m-d'] as $format) {
+            try {
+                $date = \Carbon\Carbon::createFromFormat($format, $tanggal);
+                if ($date !== false) {
+                    return $date->format('Y-m-d');
+                }
+            } catch (\Throwable) {
+                // Coba format berikutnya.
+            }
+        }
+
+        return null;
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListPegawais::route('/'),
             'view' => ViewPegawai::route('/{record}'),
             //'create' => CreatePegawai::route('/create'),
-            //'edit' => EditPegawai::route('/{record}/edit'),
+            'edit' => EditPegawai::route('/{record}/edit'),
         ];
     }
 }
