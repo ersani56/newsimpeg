@@ -46,7 +46,7 @@ class Pegawai extends Model
     // Relasi ke Unit Organisasi (Snapshot)
     public function unor()
     {
-        return $this->belongsTo(Unor::class, 'unit_organisasi_id');
+        return $this->belongsTo(Unor::class, 'unor_id', 'unor_id');
     }
 
     public function unitKerja() {

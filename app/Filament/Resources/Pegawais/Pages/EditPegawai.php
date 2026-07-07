@@ -18,6 +18,18 @@ class EditPegawai extends EditRecord
             ->where('pns_id', $this->record->pns_id)
             ->first();
 
+        $unitKerja = DB::table('unors')
+            ->where('unor_id', $this->record->unor_id)
+            ->value('nama');
+
+        $data['identitas_nama'] = trim(
+            ($this->record->gelar_depan ? $this->record->gelar_depan . ' ' : '') .
+            ($this->record->nama ?? '') .
+            ($this->record->gelar_belakang ? ', ' . $this->record->gelar_belakang : '')
+        );
+        $data['identitas_nip'] = $this->record->nip_baru ?: '-';
+        $data['identitas_unit_kerja'] = $unitKerja ?: ($staging?->unor_nama ?: '-');
+
         if ($staging) {
             $data['golongan_nama'] ??= $staging->gol_akhir_nama;
             $data['tmt_golongan'] ??= PegawaiResource::parseTanggal($staging->tmt_golongan);

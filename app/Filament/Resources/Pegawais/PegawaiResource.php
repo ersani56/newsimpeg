@@ -46,6 +46,22 @@ class PegawaiResource extends Resource
     {
         return $schema
             ->components([
+                Grid::make(3)
+                    ->schema([
+                        TextInput::make('identitas_nama')
+                            ->label('Nama Pegawai')
+                            ->disabled()
+                            ->dehydrated(false),
+                        TextInput::make('identitas_nip')
+                            ->label('NIP')
+                            ->disabled()
+                            ->dehydrated(false),
+                        TextInput::make('identitas_unit_kerja')
+                            ->label('Unit Kerja')
+                            ->disabled()
+                            ->dehydrated(false),
+                    ])
+                    ->columnSpanFull(),
                 Tabs::make('Data Pegawai')
                     ->tabs([
                         Tab::make('Data Pokok Pegawai')
@@ -243,6 +259,11 @@ class PegawaiResource extends Resource
                 ->label('JABATAN')
                 ->searchable()
                 ->sortable(),
+            TextColumn::make('unor.nama')
+                ->label('UNIT ORGANISASI')
+                ->searchable()
+                ->sortable(),
+
         ])
 
         ->actions([
