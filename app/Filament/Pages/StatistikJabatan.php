@@ -27,28 +27,44 @@ class StatistikJabatan extends Page
 
         public function getData()
         {
-            $query = DB::table('pegawais as p')
-                // Gunakan LEFT JOIN agar jika jabatan tidak ditemukan, pegawai tetap terhitung
-                ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
-                ->leftJoin('staging_import as s', 'p.pns_id', '=', 's.pns_id')
+            $query = DB::table('staging_import as s')
+                // Statistik jabatan harus mengikuti file import terbaru.
+                // Jika referensi jabatan belum ada/kosong, pegawai tetap dihitung.
+                ->leftJoin('jabatans as j', 's.jabatan_id', '=', 'j.jabatan_id')
                 ->selectRaw("
                     CASE
-                        WHEN (j.kel_jab IS NULL OR TRIM(j.kel_jab) = '')
-                            AND s.jenis_jabatan_id = '4'
-                        THEN 'pelaksana'
-                        WHEN j.kel_jab IS NULL THEN 'Belum Dikategorikan'
-
+                        WHEN LOWER(j.kel_jab) = 'struktural' AND j.eselon IN ('II/a', 'II/b', 'III/a', 'III/b', 'IV/a', 'IV/b') THEN j.eselon
+                        WHEN LOWER(j.jabatan_nama) LIKE '%kepala sekolah%' THEN 'jf guru'
                         WHEN LOWER(j.kel_jab) IN ('jf guru', 'jf kesehatan', 'jf lainnya') THEN j.kel_jab
+                        WHEN LOWER(j.kel_jab) = 'fungsional' AND LOWER(j.jabatan_nama) LIKE '%guru%' THEN 'jf guru'
+                        WHEN LOWER(j.kel_jab) = 'fungsional'
+                            AND (
+                                LOWER(j.jabatan_nama) LIKE '%dokter%'
+                                OR LOWER(j.jabatan_nama) LIKE '%perawat%'
+                                OR LOWER(j.jabatan_nama) LIKE '%bidan%'
+                                OR LOWER(j.jabatan_nama) LIKE '%apoteker%'
+                                OR LOWER(j.jabatan_nama) LIKE '%farmasi%'
+                                OR LOWER(j.jabatan_nama) LIKE '%sanitarian%'
+                                OR LOWER(j.jabatan_nama) LIKE '%nutrisionis%'
+                                OR LOWER(j.jabatan_nama) LIKE '%epidemiolog%'
+                                OR LOWER(j.jabatan_nama) LIKE '%radiografer%'
+                                OR LOWER(j.jabatan_nama) LIKE '%terapis gigi%'
+                                OR LOWER(j.jabatan_nama) LIKE '%rekam medis%'
+                            )
+                        THEN 'jf kesehatan'
+                        WHEN LOWER(j.kel_jab) = 'fungsional' THEN 'jf lainnya'
                         WHEN LOWER(j.kel_jab) = 'pelaksana' THEN 'pelaksana'
-                        WHEN LOWER(j.kel_jab) = 'struktural' AND j.eselon IS NOT NULL THEN j.eselon
+                        WHEN s.jenis_jabatan_id = '4'
+                        THEN 'pelaksana'
+                        ELSE 'Belum Dikategorikan'
                     END as kelompok,
 
-                    SUM(CASE WHEN p.kedudukan_hukum_id IN (1,2,3,4,13,15) AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pns_l,
-                    SUM(CASE WHEN p.kedudukan_hukum_id IN (1,2,3,4,13,15) AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pns_p,
-                    SUM(CASE WHEN p.kedudukan_hukum_id = 71 AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pppk_l,
-                    SUM(CASE WHEN p.kedudukan_hukum_id = 71 AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pppk_p,
-                    SUM(CASE WHEN p.kedudukan_hukum_id = 101 AND LOWER(p.jenis_kelamin) = 'm' THEN 1 ELSE 0 END) as pppk_pw_l,
-                    SUM(CASE WHEN p.kedudukan_hukum_id = 101 AND LOWER(p.jenis_kelamin) = 'f' THEN 1 ELSE 0 END) as pppk_pw_p
+                    SUM(CASE WHEN s.kedudukan_hukum_id IN ('01','02','03','04','13','15') AND LOWER(s.jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pns_l,
+                    SUM(CASE WHEN s.kedudukan_hukum_id IN ('01','02','03','04','13','15') AND LOWER(s.jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pns_p,
+                    SUM(CASE WHEN s.kedudukan_hukum_id = '71' AND LOWER(s.jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pppk_l,
+                    SUM(CASE WHEN s.kedudukan_hukum_id = '71' AND LOWER(s.jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pppk_p,
+                    SUM(CASE WHEN s.kedudukan_hukum_id = '101' AND LOWER(s.jenis_kelamin) LIKE '%m%' THEN 1 ELSE 0 END) as pppk_pw_l,
+                    SUM(CASE WHEN s.kedudukan_hukum_id = '101' AND LOWER(s.jenis_kelamin) LIKE '%f%' THEN 1 ELSE 0 END) as pppk_pw_p
                 ")
                 ->groupBy('kelompok')
                 ->get();
@@ -66,6 +82,7 @@ class StatistikJabatan extends Page
                 'jf guru' => 'JF Guru',
                 'jf kesehatan' => 'JF Kesehatan',
                 'jf lainnya' => 'JF Lainnya',
+                'Belum Dikategorikan' => 'Belum Dikategorikan',
             ];
 
             return collect($kategori)->map(function ($label, $db_key) use ($query) {
