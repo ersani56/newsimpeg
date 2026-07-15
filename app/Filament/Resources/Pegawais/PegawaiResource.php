@@ -20,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -134,14 +135,27 @@ class PegawaiResource extends Resource
                                             ->label('Nama Jabatan')
                                             ->relationship('jabatan', 'jabatan_nama')
                                             ->searchable()
-                                            ->preload(false),
+                                            ->preload(false)
+                                            ->live()
+                                            ->afterStateUpdated(function (?string $state, Set $set): void {
+                                                $jabatan = DB::table('jabatans')->where('jabatan_id', $state)->first();
+
+                                                $set('jabatan_nama', $jabatan?->jabatan_nama);
+                                                $set('jabatan_eselon', $jabatan?->eselon);
+                                                $set('jabatan_jenjang', $jabatan?->jenjang);
+                                            }),
+                                        TextInput::make('jabatan_nama')
+                                            ->label('Nama Jabatan Terpilih')
+                                            ->disabled()
+                                            ->dehydrated(false),
                                         Select::make('jenis_jabatan_id')
                                             ->label('Jenis Jabatan')
                                             ->options([
                                                 '1' => 'Jabatan Struktural',
                                                 '2' => 'Jabatan Fungsional',
                                                 '4' => 'Jabatan Pelaksana',
-                                            ]),
+                                            ])
+                                            ->native(false),
                                         Select::make('jabatan_eselon')
                                             ->label('Eselon')
                                             ->options([
@@ -150,7 +164,8 @@ class PegawaiResource extends Resource
                                                 'III/a' => 'III/a', 'III/b' => 'III/b',
                                                 'IV/a' => 'IV/a', 'IV/b' => 'IV/b',
                                             ])
-                                            ->placeholder('Non Eselon'),
+                                            ->placeholder('Non Eselon')
+                                            ->native(false),
                                         TextInput::make('jabatan_jenjang')
                                             ->label('Jenjang Jabatan')
                                             ->placeholder('Utama, Madya, Muda, Pertama, dan seterusnya'),

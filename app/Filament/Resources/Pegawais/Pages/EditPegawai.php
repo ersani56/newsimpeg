@@ -35,18 +35,26 @@ class EditPegawai extends EditRecord
             $data['tmt_golongan'] ??= PegawaiResource::parseTanggal($staging->tmt_golongan);
             $data['mk_tahun'] ??= $staging->mk_tahun;
             $data['mk_bulan'] ??= $staging->mk_bulan;
-            $data['jenis_jabatan_id'] ??= $staging->jenis_jabatan_id;
-            $data['tmt_jabatan'] ??= PegawaiResource::parseTanggal($staging->tmt_jabatan);
+            $data['jabatan_id'] = $this->filled($data['jabatan_id'] ?? null) ? $data['jabatan_id'] : $staging->jabatan_id;
+            $data['jabatan_nama'] = $this->filled($data['jabatan_nama'] ?? null) ? $data['jabatan_nama'] : $staging->jabatan_nama;
+            $data['jenis_jabatan_id'] = $this->filled($data['jenis_jabatan_id'] ?? null) ? $data['jenis_jabatan_id'] : $staging->jenis_jabatan_id;
+            $data['jenis_jabatan_nama'] = $this->filled($data['jenis_jabatan_nama'] ?? null) ? $data['jenis_jabatan_nama'] : $staging->jenis_jabatan_nama;
+            $data['tmt_jabatan'] = $this->filled($data['tmt_jabatan'] ?? null) ? $data['tmt_jabatan'] : PegawaiResource::parseTanggal($staging->tmt_jabatan);
             $data['tingkat_pendidikan_nama'] ??= $staging->tingkat_pendidikan_nama;
             $data['nama_sekolah'] ??= $staging->nama_sekolah;
             $data['tahun_lulus'] ??= $staging->tahun_lulus;
         }
 
         $jabatan = DB::table('jabatans')->where('jabatan_id', $data['jabatan_id'] ?? null)->first();
-        $data['jabatan_eselon'] ??= $jabatan?->eselon;
-        $data['jabatan_jenjang'] ??= $jabatan?->jenjang;
+        if ($jabatan) {
+            $data['jabatan_nama'] = $jabatan->jabatan_nama;
+            $data['jabatan_eselon'] = $this->filled($data['jabatan_eselon'] ?? null) ? $data['jabatan_eselon'] : $jabatan->eselon;
+            $data['jabatan_jenjang'] = $this->filled($data['jabatan_jenjang'] ?? null) ? $data['jabatan_jenjang'] : $jabatan->jenjang;
+        }
 
         $data['pangkat_nama'] = PegawaiResource::namaPangkat($data['golongan_nama'] ?? null);
+        $data['jabatan_eselon'] = $this->blankToNull($data['jabatan_eselon'] ?? null);
+        $data['jabatan_jenjang'] = $this->blankToNull($data['jabatan_jenjang'] ?? null);
 
         return $data;
     }
@@ -95,19 +103,13 @@ class EditPegawai extends EditRecord
 
     protected function afterSave(): void
     {
-        $kelompokJabatan = [
-            '1' => 'Struktural',
-            '2' => 'Fungsional',
-            '4' => 'Pelaksana',
-        ];
-
         if ($this->record->jabatan_id) {
             DB::table('jabatans')
                 ->where('jabatan_id', $this->record->jabatan_id)
                 ->update([
-                    'kel_jab' => $kelompokJabatan[$this->record->jenis_jabatan_id] ?? 'Pelaksana',
-                    'eselon' => $this->record->jabatan_eselon,
-                    'jenjang' => $this->record->jabatan_jenjang,
+                    'kel_jab' => $this->kelompokJabatan($this->record->jenis_jabatan_id, $this->record->jabatan_nama),
+                    'eselon' => $this->blankToNull($this->record->jabatan_eselon),
+                    'jenjang' => $this->blankToNull($this->record->jabatan_jenjang),
                 ]);
         }
 
@@ -131,6 +133,39 @@ class EditPegawai extends EditRecord
                 'nama_sekolah' => $this->record->nama_sekolah,
                 'tahun_lulus' => $this->record->tahun_lulus,
             ]);
+    }
+
+    private function filled(mixed $value): bool
+    {
+        return $value !== null && $value !== '';
+    }
+
+    private function blankToNull(mixed $value): mixed
+    {
+        return $value === '' || $value === 'NULL' ? null : $value;
+    }
+
+    private function kelompokJabatan(?string $jenisJabatanId, ?string $jabatanNama): string
+    {
+        $nama = strtolower($jabatanNama ?? '');
+
+        return match ((string) $jenisJabatanId) {
+            '1' => 'struktural',
+            '2' => str_contains($nama, 'guru') ? 'jf guru' : ($this->isJabatanKesehatan($nama) ? 'jf kesehatan' : 'jf lainnya'),
+            '4' => 'pelaksana',
+            default => 'pelaksana',
+        };
+    }
+
+    private function isJabatanKesehatan(string $nama): bool
+    {
+        foreach (['dokter', 'perawat', 'bidan', 'apoteker', 'farmasi', 'sanitarian', 'nutrisionis', 'epidemiolog', 'radiografer', 'terapis gigi', 'rekam medis'] as $keyword) {
+            if (str_contains($nama, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }
