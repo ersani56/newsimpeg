@@ -12,22 +12,17 @@ class Jabatan extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'jenis_jabatan_id',
-        'unor_id',
-        'nama',
+        'jabatan_id',
+        'kel_jab',
+        'unor_nama',
+        'jabatan_nama',
         'eselon',
+        'bup',
+        'jenjang',
     ];
 
     public function rJabatans()
     {
         return $this->hasMany(RiwayatJabatan::class, 'jabatan_id');
-    }
-    public function jenisJabatan()
-    {
-        return $this->belongsTo(JenisJabatan::class, 'jenis_jabatan_id', 'jenis_jabatan_id');
-    }
-    public function unor()
-    {
-        return $this->belongsTo(Unor::class, 'unor_id', 'unor_id');
     }
 }
