@@ -35,7 +35,7 @@
         @forelse($pegawai as $i => $p)
             <tr>
                 <td class="center">{{ $i+1}}</td>
-                <td>{{ $p->nama }}</td>
+                <td>{{ $p->nama_lengkap }}</td>
                 <td> {{ $p->nip_baru }}</td>
                 <td>{{ $p->kh_nama }}</td>
                 <td>{{ $p->golru_display }}</td>

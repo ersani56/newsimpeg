@@ -25,13 +25,20 @@ public $filterEselon = 'semua';
             // ambil jabatan dari snapshot
             ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
             ->leftjoin('golongans as g', 'p.golongan_id', '=', 'g.golongan_id')
+            ->leftJoin('staging_import as s', 'p.pns_id', '=', 's.pns_id')
             ->select([
-                'p.nama',
                 'p.nip_baru',
                 'j.jabatan_nama',
-                'g.golru as golru_display',
+                DB::raw("COALESCE(NULLIF(p.golongan_nama, ''), NULLIF(s.gol_akhir_nama, ''), g.golru, '-') as golru_display"),
                 'j.eselon as eselon_display',
                 'j.unor_nama',
+                DB::raw("
+                    TRIM(CONCAT(
+                        IF(p.gelar_depan IS NOT NULL AND p.gelar_depan != '', CONCAT(p.gelar_depan, ' '), ''),
+                        COALESCE(p.nama, ''),
+                        IF(p.gelar_belakang IS NOT NULL AND p.gelar_belakang != '', CONCAT(', ', p.gelar_belakang), '')
+                    )) as nama_lengkap
+                "),
             ])
 
             ->where('j.kel_jab', 'struktural');
@@ -59,7 +66,7 @@ public $filterEselon = 'semua';
 
         // amankan null
         $data = $data->map(function ($row) {
-            $row->nama = $row->nama ?? '-';
+            $row->nama_lengkap = $row->nama_lengkap ?? '-';
             $row->nip_baru = $row->nip_baru ?? '-';
             $row->jabatan_nama = $row->jabatan_nama ?? '-';
             $row->eselon_display = $row->eselon_display ?? '-';

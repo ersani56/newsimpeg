@@ -28,13 +28,20 @@ class DaftarPegawaiFungsional extends Page
                 ->leftJoin('golongans as g', 'p.golongan_id', '=', 'g.golongan_id')
                 ->leftJoin('kedudukan_hukums as k', 'p.kedudukan_hukum_id', '=', 'k.kedudukan_hukum_id')
                 ->leftJoin('unors as u', 'p.unor_id', '=', 'u.unor_id')
+                ->leftJoin('staging_import as s', 'p.pns_id', '=', 's.pns_id')
                 ->select([
-                    'p.nama',
                     'p.nip_baru',
                     'k.nama as kh_nama',
-                    'g.golru as golru_display',
+                    DB::raw("COALESCE(NULLIF(p.golongan_nama, ''), NULLIF(s.gol_akhir_nama, ''), g.golru, '-') as golru_display"),
                     'j.jabatan_nama',
                     'u.nama as unor_nama',
+                    DB::raw("
+                        TRIM(CONCAT(
+                            IF(p.gelar_depan IS NOT NULL AND p.gelar_depan != '', CONCAT(p.gelar_depan, ' '), ''),
+                            COALESCE(p.nama, ''),
+                            IF(p.gelar_belakang IS NOT NULL AND p.gelar_belakang != '', CONCAT(', ', p.gelar_belakang), '')
+                        )) as nama_lengkap
+                    "),
 
                     DB::raw("
                     CASE
