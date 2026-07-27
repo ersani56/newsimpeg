@@ -26,12 +26,13 @@ public $filterEselon = 'semua';
             ->leftJoin('jabatans as j', 'p.jabatan_id', '=', 'j.jabatan_id')
             ->leftjoin('golongans as g', 'p.golongan_id', '=', 'g.golongan_id')
             ->leftJoin('staging_import as s', 'p.pns_id', '=', 's.pns_id')
+            ->leftJoin('unors as u', 'p.unor_id', '=', 'u.unor_id')
             ->select([
                 'p.nip_baru',
                 'j.jabatan_nama',
                 DB::raw("COALESCE(NULLIF(p.golongan_nama, ''), NULLIF(s.gol_akhir_nama, ''), g.golru, '-') as golru_display"),
                 'j.eselon as eselon_display',
-                'j.unor_nama',
+                DB::raw("COALESCE(NULLIF(u.nama, ''), NULLIF(s.unor_nama, ''), NULLIF(j.unor_nama, ''), '-') as unor_nama"),
                 DB::raw("
                     TRIM(CONCAT(
                         IF(p.gelar_depan IS NOT NULL AND p.gelar_depan != '', CONCAT(p.gelar_depan, ' '), ''),
