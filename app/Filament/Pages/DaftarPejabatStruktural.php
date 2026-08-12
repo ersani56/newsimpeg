@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\MenuAccess;
+
 use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Pages\Page;
@@ -10,6 +12,11 @@ use UnitEnum;
 
 class DaftarPejabatStruktural extends Page
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('pejabat_struktural');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-identification';
     protected static ?string $navigationLabel = 'Pejabat Struktural';
     protected string $view = 'filament.pages.daftar-pejabat-struktural';

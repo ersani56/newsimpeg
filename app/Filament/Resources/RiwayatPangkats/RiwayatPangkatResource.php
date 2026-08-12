@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\RiwayatPangkats;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\RiwayatPangkats\Pages\CreateRiwayatPangkat;
 use App\Filament\Resources\RiwayatPangkats\Pages\EditRiwayatPangkat;
 use App\Filament\Resources\RiwayatPangkats\Pages\ListRiwayatPangkats;
@@ -17,6 +19,11 @@ use Filament\Tables\Table;
 
 class RiwayatPangkatResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('riwayat_pangkat');
+    }
+
     protected static ?string $model = RiwayatPangkat::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

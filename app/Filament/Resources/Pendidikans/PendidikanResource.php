@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Pendidikans;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\Pendidikans\Pages\CreatePendidikan;
 use App\Filament\Resources\Pendidikans\Pages\EditPendidikan;
 use App\Filament\Resources\Pendidikans\Pages\ListPendidikans;
@@ -19,6 +21,11 @@ use UnitEnum;
 
 class PendidikanResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('referensi_pendidikan');
+    }
+
     protected static ?string $model = Pendidikan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

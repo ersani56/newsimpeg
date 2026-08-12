@@ -56,10 +56,14 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Dashboard', // Grup untuk halaman dashboard
+                'Manajemen',
                 'Data Pegawai',
                 'Data Riwayat',
                 'Statisik',
                 'Tabel Referensi',
+                NavigationGroup::make()
+                    ->label('Manajemen')
+                    ->collapsed(),
                 NavigationGroup::make()
                     ->label('Data Pegawai')
                     ->collapsed(), // Ini yang membuatnya tertutup secara default

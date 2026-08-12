@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\RiwayatJabatans;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\RiwayatJabatans\Pages\CreateRiwayatJabatan;
 use App\Filament\Resources\RiwayatJabatans\Pages\EditRiwayatJabatan;
 use App\Filament\Resources\RiwayatJabatans\Pages\ListRiwayatJabatans;
@@ -17,6 +19,11 @@ use Filament\Tables\Table;
 
 class RiwayatJabatanResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('riwayat_jabatan');
+    }
+
     protected static ?string $model = RiwayatJabatan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\MenuAccess;
+
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -11,6 +13,11 @@ use UnitEnum;
 
 class StatistikPend extends Page
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('statistik_pendidikan');
+    }
+
     protected static string|BackedEnum|null $navigationIcon= 'heroicon-o-academic-cap';
     protected string $view = 'filament.pages.statistik-pend';
     protected static ?string $navigationLabel = 'Statistik Pendidikan';

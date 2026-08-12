@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\MenuAccess;
+
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use BackedEnum;
@@ -11,6 +13,11 @@ use Illuminate\Support\Facades\Response;
 
 class StatistikAgama extends Page
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('statistik_agama');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-sun';
     protected static ?string $modelLabel = 'Statistik Agama';
     protected string $view = 'filament.pages.statistik-agama';

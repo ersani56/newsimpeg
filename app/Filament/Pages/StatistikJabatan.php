@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\MenuAccess;
+
 use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Pages\Page;
@@ -10,6 +12,11 @@ use UnitEnum;
 
 class StatistikJabatan extends Page
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('statistik_jabatan');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-briefcase';
     protected static ?string $modelLabel = 'Statistik Jabatan';
     protected string $view = 'filament.pages.statistik-jabatan';

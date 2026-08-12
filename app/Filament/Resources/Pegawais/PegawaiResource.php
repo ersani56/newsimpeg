@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Pegawais;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\PegawaiResource\Pages\ViewPegawai;
 use App\Filament\Resources\Pegawais\Pages\ListPegawais;
 use App\Filament\Resources\Pegawais\Pages\EditPegawai;
@@ -33,6 +35,11 @@ use UnitEnum;
 
 class PegawaiResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('pegawai');
+    }
+
     protected static ?string $model = Pegawai::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

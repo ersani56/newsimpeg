@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Golongans;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\Golongans\Pages\CreateGolongan;
 use App\Filament\Resources\Golongans\Pages\EditGolongan;
 use App\Filament\Resources\Golongans\Pages\ListGolongans;
@@ -21,6 +23,11 @@ use UnitEnum;
 
 class GolonganResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('referensi_golongan');
+    }
+
     protected static ?string $model = Golongan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\JenisJabatans;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\JenisJabatans\Pages\CreateJenisJabatan;
 use App\Filament\Resources\JenisJabatans\Pages\EditJenisJabatan;
 use App\Filament\Resources\JenisJabatans\Pages\ListJenisJabatans;
@@ -21,6 +23,11 @@ use UnitEnum;
 
 class JenisJabatanResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('referensi_jenis_jabatan');
+    }
+
     protected static ?string $model = JenisJabatan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

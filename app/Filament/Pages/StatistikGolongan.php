@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\MenuAccess;
+
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Filament\Support\Icons\Heroicon;
@@ -12,6 +14,11 @@ use UnitEnum;
 
 class StatistikGolongan extends Page
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('statistik_golongan');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ?string $modelLabel = 'Statistik Golongan';
     protected string $view = 'filament.pages.statistik-golongan';

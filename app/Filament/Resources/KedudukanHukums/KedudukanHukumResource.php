@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\KedudukanHukums;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\KedudukanHukums\Pages\CreateKedudukanHukum;
 use App\Filament\Resources\KedudukanHukums\Pages\EditKedudukanHukum;
 use App\Filament\Resources\KedudukanHukums\Pages\ListKedudukanHukums;
@@ -21,6 +23,11 @@ use UnitEnum;
 
 class KedudukanHukumResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('referensi_kedudukan_hukum');
+    }
+
     protected static ?string $model = KedudukanHukum::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\RiwayatPendidikans;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\RiwayatPendidikans\Pages\CreateRiwayatPendidikan;
 use App\Filament\Resources\RiwayatPendidikans\Pages\EditRiwayatPendidikan;
 use App\Filament\Resources\RiwayatPendidikans\Pages\ListRiwayatPendidikans;
@@ -17,6 +19,11 @@ use Filament\Tables\Table;
 
 class RiwayatPendidikanResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('riwayat_pendidikan');
+    }
+
     protected static ?string $model = RiwayatPendidikan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

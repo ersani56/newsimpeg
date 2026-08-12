@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Agamas;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\Agamas\Pages\CreateAgama;
 use App\Filament\Resources\Agamas\Pages\EditAgama;
 use App\Filament\Resources\Agamas\Pages\ListAgamas;
@@ -20,6 +22,11 @@ use UnitEnum;
 
 class AgamaResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('referensi_agama');
+    }
+
     protected static ?string $model = Agama::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

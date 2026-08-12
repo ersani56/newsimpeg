@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\MenuAccess;
+
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -10,6 +12,11 @@ use UnitEnum;
 
 class DaftarPegawaiFungsional extends Page
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('fungsional_pelaksana');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Fungsional & Pelaksana';
     protected static ?string $title = 'Daftar Pegawai Fungsional & Pelaksana';

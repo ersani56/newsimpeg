@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Jabatans;
 
+use App\Support\MenuAccess;
+
 use App\Filament\Resources\Jabatans\Pages\CreateJabatan;
 use App\Filament\Resources\Jabatans\Pages\EditJabatan;
 use App\Filament\Resources\Jabatans\Pages\ListJabatans;
@@ -21,6 +23,11 @@ use UnitEnum;
 
 class JabatanResource extends Resource
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('referensi_jabatan');
+    }
+
     protected static ?string $model = Jabatan::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

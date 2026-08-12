@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\MenuAccess;
+
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -11,6 +13,11 @@ use UnitEnum;
 
 class StatistikJenkel extends Page
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('statistik_jenis_kelamin');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
     protected string $view = 'filament.pages.statistik-jenkel';
     protected static ?string $modelLabel = 'statistik jenis kelamin';

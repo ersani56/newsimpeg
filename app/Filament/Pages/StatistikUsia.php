@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\MenuAccess;
+
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use BackedEnum;
@@ -12,6 +14,11 @@ use UnitEnum;
 
 class StatistikUsia extends Page
 {
+    public static function canAccess(): bool
+    {
+        return MenuAccess::can('statistik_usia');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
     protected string $view = 'filament.pages.statistik-usia';
     protected static ?string $modelLabel = 'statistik usia';
